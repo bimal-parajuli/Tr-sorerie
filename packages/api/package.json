@@ -1,0 +1,12 @@
+{
+  "name": "@tresorerie/api",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@trpc/server": "latest",
+    "@trpc/client": "latest",
+    "zod": "latest",
+    "@tresorerie/db": "*"
+  }
+}
