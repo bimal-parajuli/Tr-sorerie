@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-shm
+prisma/dev.db-wal
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+
+# OS files
+Thumbs.db
+.env.example
+
+# Test coverage
+coverage/
+.nyc_output/
+jest-coverage/
+
+# Playwright
+test-results/
+blob-report/
+playwright-report/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Misc
+.cache/
+tmp/
+temp/
+*.pem
+*.key
+
+# Sentry
+.sentryclirc
+
+# Vercel
+.vercel
+
+# dotenv environment variable files
+.env*.local
