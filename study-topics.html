@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SACCO — Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #09090b;
+  --bg2: #111113;
+  --bg3: #18181b;
+  --border: #27272a;
+  --border-hi: #3f3f46;
+  --text: #fafafa;
+  --dim: #a1a1aa;
+  --muted: #52525b;
+
+  --c1: #fb923c; /* orange — fundamentals */
+  --c2: #34d399; /* green  — backend/db */
+  --c3: #60a5fa; /* blue   — frontend */
+  --c4: #a78bfa; /* purple — architecture */
+  --c5: #f472b6; /* pink   — security/auth */
+  --c6: #facc15; /* yellow — ops/deploy */
+  --c7: #94a3b8; /* slate  — tooling */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Lora', serif;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ── LAYOUT ── */
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 32px 100px; }
+
+/* ── HEADER ── */
+.header {
+  padding: 72px 0 52px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 60px;
+}
+.eyebrow {
+  font-family: 'Syne Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -2px;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.header-note {
+  font-size: 15px;
+  color: var(--dim);
+  max-width: 580px;
+  line-height: 1.75;
+  font-style: italic;
+}
+.legend {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-top: 28px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 10.5px;
+  color: var(--dim);
+}
+.leg-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* ── DOMAIN SECTIONS ── */
+.domain { margin-bottom: 56px; }
+.domain-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.domain-num {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 28px;
+}
+.domain-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.domain-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-family: 'Syne Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+}
+
+/* ── TOPIC CARDS ── */
+.topics { display: flex; flex-direction: column; gap: 2px; }
+.topic {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.topic:hover { border-color: var(--border-hi); }
+.topic-top {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: start;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+.topic-marker {
+  width: 6px; height: 6px; border-radius: 50%;
+  margin-top: 6px; flex-shrink: 0;
+}
+.topic-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.topic-tags {
+  display: flex; gap: 5px; flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: 1px;
+}
+.tag {
+  font-family: 'Syne Mono', monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--bg3);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tag.critical { background: rgba(251,146,60,0.1); color: var(--c1); border-color: rgba(251,146,60,0.2); }
+.tag.important { background: rgba(52,211,153,0.08); color: #6ee7b7; border-color: rgba(52,211,153,0.15); }
+
+.topic-body {
+  padding: 0 16px 14px 52px;
+  display: none;
+}
+.topic.open .topic-body { display: block; }
+.topic.open { border-color: var(--border-hi); }
+
+.topic-why {
+  font-size: 13px;
+  color: var(--dim);
+  line-height: 1.7;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+.topic-concepts {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-bottom: 10px;
+}
+.concept-chip {
+  font-family: 'Syne Mono', monospace;
+  font-size: 10.5px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: var(--bg3);
+  color: var(--dim);
+  border: 1px solid var(--border);
+}
+.concept-chip.hi { border-color: var(--border-hi); color: var(--text); }
+.topic-resource {
+  font-family: 'Syne Mono', monospace;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.topic-resource span { color: var(--dim); }
+
+.chevron {
+  font-size: 12px; color: var(--muted);
+  margin-top: 3px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  font-family: 'Syne Mono', monospace;
+}
+.topic.open .chevron { transform: rotate(180deg); }
+
+/* ── PRIORITY SCALE ── */
+.priority-bar {
+  display: flex; gap: 3px; align-items: center;
+  margin-top: 2px;
+}
+.p-dot { width: 5px; height: 5px; border-radius: 50%; }
+.p-on  { background: var(--c1); }
+.p-off { background: var(--border); }
+
+/* ── DIVIDER ── */
+hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+/* ── CALLOUT ── */
+.callout {
+  display: flex; gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-size: 13px;
+  line-height: 1.65;
+  font-style: italic;
+  color: var(--dim);
+}
+.callout-orange { background: rgba(251,146,60,0.06); border: 1px solid rgba(251,146,60,0.15); }
+.callout-blue   { background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.15); color: #93c5fd; }
+.callout-green  { background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.15); color: #6ee7b7; }
+.callout strong { font-style: normal; color: var(--text); display: block; margin-bottom: 3px; }
+
+/* ── SEQUENCE MAP ── */
+.seq { display: flex; flex-direction: column; gap: 0; margin: 24px 0; }
+.seq-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.seq-item:last-child { border: none; }
+.seq-num {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 28px;
+  padding-top: 2px;
+}
+.seq-content {}
+.seq-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.seq-desc { font-size: 12.5px; color: var(--dim); font-style: italic; }
+
+code {
+  font-family: 'Syne Mono', monospace;
+  font-size: 11.5px;
+  background: var(--bg3);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #c4b5fd;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="eyebrow">SACCO — Architecture Study Guide</div>
+  <h1>What to<br/>Study &amp; Why</h1>
+  <p class="header-note">
+    Every topic here maps to a real decision you'll face building this app.
+    Nothing is included for completeness — only what will change how you build.
+  </p>
+  <div class="legend">
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c1)"></div>Fundamentals</div>
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c2)"></div>Backend / DB</div>
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c3)"></div>Frontend</div>
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c4)"></div>Architecture</div>
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c5)"></div>Auth / Security</div>
+    <div class="legend-item"><div class="leg-dot" style="background:var(--c6)"></div>Ops / Deploy</div>
+  </div>
+</div>
+
+<!-- SUGGESTED ORDER -->
+<div class="callout callout-orange">
+  <div>💡</div>
+  <div><strong>Suggested study order</strong> Follow the domains in sequence. Each one builds context for the next. Don't jump to Frontend (03) before you understand the Backend/DB layer (02) — your frontend decisions are driven by what the API layer exposes.</div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 01 — FUNDAMENTALS
+══════════════════════════════════════ -->
+<div class="domain" id="d1">
+  <div class="domain-header">
+    <div class="domain-num">01</div>
+    <div class="domain-title" style="color:var(--c1)">Fundamentals</div>
+    <div class="domain-badge" style="background:rgba(251,146,60,0.1); color:var(--c1); border:1px solid rgba(251,146,60,0.2)">Study First</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic open">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c1)"></div>
+        <div>
+          <div class="topic-name">TypeScript — Deeply</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">You're writing TypeScript across the entire stack — frontend, backend, API, shared packages. Shallow TS knowledge means you'll fight the type system instead of leveraging it.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Generics</div>
+          <div class="concept-chip hi">Discriminated unions</div>
+          <div class="concept-chip hi">Utility types (Pick, Omit, Partial)</div>
+          <div class="concept-chip hi">Infer keyword</div>
+          <div class="concept-chip hi">Strict mode implications</div>
+          <div class="concept-chip">Declaration merging</div>
+          <div class="concept-chip">Module augmentation</div>
+          <div class="concept-chip">satisfies operator</div>
+        </div>
+        <div class="topic-why">Specifically: understand how tRPC infers types from your router, and how Zod schemas produce TypeScript types. These patterns appear constantly.</div>
+        <div class="topic-resource">Start → <span>Matt Pocock's "Total TypeScript" (free lessons)</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c1)"></div>
+        <div>
+          <div class="topic-name">Zod — Schema Validation as a Design Tool</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Zod is not just validation. In this stack, your Zod schemas <em>are</em> your API contracts, your form types, and your data model documentation simultaneously. Understand how to compose schemas and derive types from them.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">z.infer&lt;typeof schema&gt;</div>
+          <div class="concept-chip hi">Refinements and superRefine</div>
+          <div class="concept-chip hi">transform() for data coercion</div>
+          <div class="concept-chip hi">Schema composition (.merge, .extend, .pick)</div>
+          <div class="concept-chip">Discriminated union schemas</div>
+          <div class="concept-chip">Async validation</div>
+        </div>
+        <div class="topic-why">Pattern to study: define one Zod schema for a deposit input, then use it in your tRPC procedure AND your React Hook Form. One source of truth.</div>
+        <div class="topic-resource">Start → <span>Zod official docs are excellent — read them top to bottom once</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c1)"></div>
+        <div>
+          <div class="topic-name">Async JavaScript — Promises, async/await, error handling</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Every DB call, every API request, every file upload is async. Mishandling async errors is how financial mutations silently fail.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">try/catch patterns in async functions</div>
+          <div class="concept-chip hi">Promise.all vs Promise.allSettled</div>
+          <div class="concept-chip hi">Error propagation chains</div>
+          <div class="concept-chip">Structured error types (not just throw new Error)</div>
+          <div class="concept-chip">AbortController for cancellation</div>
+        </div>
+        <div class="topic-why">Financial critical: a Prisma transaction throws on failure — you must catch it, distinguish a constraint violation from a network error, and surface the right message.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 02 — BACKEND / DB
+══════════════════════════════════════ -->
+<div class="domain" id="d2">
+  <div class="domain-header">
+    <div class="domain-num">02</div>
+    <div class="domain-title" style="color:var(--c2)">Backend &amp; Database</div>
+    <div class="domain-badge" style="background:rgba(52,211,153,0.08); color:var(--c2); border:1px solid rgba(52,211,153,0.15)">Core Layer</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c2)"></div>
+        <div>
+          <div class="topic-name">PostgreSQL — Beyond Basic SQL</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">You designed the schema — now understand how Postgres actually executes it. The wrong index strategy or missing transaction isolation can corrupt financial data silently.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">ACID properties — what each one means concretely</div>
+          <div class="concept-chip hi">Transaction isolation levels (READ COMMITTED vs REPEATABLE READ)</div>
+          <div class="concept-chip hi">SELECT FOR UPDATE — preventing race conditions on balance updates</div>
+          <div class="concept-chip hi">EXPLAIN ANALYZE — reading query plans</div>
+          <div class="concept-chip hi">Index types (B-tree vs GIN) and when to use each</div>
+          <div class="concept-chip hi">Partial indexes (WHERE clause)</div>
+          <div class="concept-chip">Triggers vs application-level logic tradeoffs</div>
+          <div class="concept-chip">JSONB operators and indexing</div>
+          <div class="concept-chip">pg_cron for scheduled jobs</div>
+          <div class="concept-chip">Connection pooling (PgBouncer) — why Vercel needs it</div>
+        </div>
+        <div class="topic-why">Specific scenario: two employees deposit to the same account simultaneously. Without <code>SELECT FOR UPDATE</code> or serializable isolation, both read the same <code>balance_before</code> and one update is lost. Study this.</div>
+        <div class="topic-resource">Start → <span>"Use The Index, Luke" (free online book) + Postgres official docs on transactions</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c2)"></div>
+        <div>
+          <div class="topic-name">Prisma ORM — Schema, Migrations, Transactions</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Prisma is your daily driver for all DB interaction. Know it well — especially its transaction API, which is your primary guarantee of atomicity.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">prisma.$transaction() — interactive vs batch</div>
+          <div class="concept-chip hi">Migration workflow (dev vs deploy)</div>
+          <div class="concept-chip hi">Relation queries (include, select)</div>
+          <div class="concept-chip hi">Prisma middleware for audit logging</div>
+          <div class="concept-chip hi">Client extensions</div>
+          <div class="concept-chip">Raw SQL with prisma.$queryRaw when Prisma is insufficient</div>
+          <div class="concept-chip">Connection management in serverless (singleton pattern)</div>
+          <div class="concept-chip">Schema best practices: @@index, @@unique, @@map</div>
+        </div>
+        <div class="topic-why">The interactive transaction (<code>prisma.$transaction(async (tx) => {...})</code>) is how you guarantee that a deposit row and a balance update either both succeed or both roll back. This pattern is in every financial mutation you write.</div>
+        <div class="topic-resource">Start → <span>Prisma docs: "Transactions and batch queries" section — read it carefully</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c2)"></div>
+        <div>
+          <div class="topic-name">tRPC — Router Design and Middleware</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">tRPC isn't complex — but understanding its middleware chain and context pattern is essential for cleanly enforcing access control across 50+ procedures.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Context creation (createTRPCContext)</div>
+          <div class="concept-chip hi">Middleware chain — protectedProcedure, adminProcedure</div>
+          <div class="concept-chip hi">Router composition — merging sub-routers</div>
+          <div class="concept-chip hi">Error handling — TRPCError codes</div>
+          <div class="concept-chip">Input/output type inference</div>
+          <div class="concept-chip">Batching and request deduplication</div>
+        </div>
+        <div class="topic-why">Pattern to design early: a middleware hierarchy where <code>publicProcedure → authedProcedure → employeeProcedure → adminProcedure</code> each add role checks. Every router procedure picks the right level. Changing a role rule means changing one middleware, not hunting 50 procedures.</div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c2)"></div>
+        <div>
+          <div class="topic-name">Supabase — Row Level Security (RLS)</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">RLS is a database-layer access control policy. When enabled, a member querying <code>savings_accounts</code> literally cannot see another member's row — the DB filters it out. It's a second line of defence behind your application layer.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">ENABLE ROW LEVEL SECURITY on tables</div>
+          <div class="concept-chip hi">CREATE POLICY — FOR SELECT, INSERT, UPDATE</div>
+          <div class="concept-chip hi">auth.uid() and auth.jwt() in policy conditions</div>
+          <div class="concept-chip hi">Service role key bypasses RLS — understand when to use it</div>
+          <div class="concept-chip">Policy performance implications</div>
+        </div>
+        <div class="topic-why">Decision to make: whether to enforce all access control in tRPC middleware (simpler) or add RLS as a defence-in-depth layer too (more secure, more setup). For a financial app, do both.</div>
+        <div class="topic-resource">Start → <span>Supabase docs: "Row Level Security" — has good worked examples</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c2)"></div>
+        <div>
+          <div class="topic-name">Financial Data Patterns</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Financial software has specific, non-obvious patterns that general web dev tutorials never cover. Getting these wrong means undetectable data corruption.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Never use floats for money — always NUMERIC/Decimal</div>
+          <div class="concept-chip hi">Immutable ledger pattern (append-only transactions)</div>
+          <div class="concept-chip hi">Reversals, not deletions or edits</div>
+          <div class="concept-chip hi">Idempotency keys — prevent duplicate transactions on retry</div>
+          <div class="concept-chip hi">Reducing balance EMI formula</div>
+          <div class="concept-chip hi">Optimistic locking vs pessimistic locking</div>
+          <div class="concept-chip">Reconciliation patterns</div>
+          <div class="concept-chip">Audit trail design</div>
+        </div>
+        <div class="topic-why">The idempotency key pattern is especially important: if a deposit API call times out and the client retries, you must not create two deposit records. The key (a UUID generated by the client) guarantees the server is idempotent.</div>
+        <div class="topic-resource">Start → <span>Stripe's engineering blog on idempotency — the best public resource on this topic</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 03 — FRONTEND
+══════════════════════════════════════ -->
+<div class="domain" id="d3">
+  <div class="domain-header">
+    <div class="domain-num">03</div>
+    <div class="domain-title" style="color:var(--c3)">Frontend</div>
+    <div class="domain-badge" style="background:rgba(96,165,250,0.08); color:var(--c3); border:1px solid rgba(96,165,250,0.15)">User Layer</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c3)"></div>
+        <div>
+          <div class="topic-name">Next.js App Router — How It Actually Works</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">App Router is a paradigm shift from Pages Router. Most bugs come from not understanding when something runs on the server vs the client, and what can be async vs what can't.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Server Components vs Client Components — the boundary</div>
+          <div class="concept-chip hi">When to use "use client"</div>
+          <div class="concept-chip hi">Layouts, loading.tsx, error.tsx</div>
+          <div class="concept-chip hi">Route groups and parallel routes</div>
+          <div class="concept-chip hi">Server Actions — what they are and when NOT to use them</div>
+          <div class="concept-chip hi">Streaming and Suspense</div>
+          <div class="concept-chip">Caching model — fetch(), revalidatePath, revalidateTag</div>
+          <div class="concept-chip">Middleware (next/server) for auth guards</div>
+        </div>
+        <div class="topic-why">Rule to internalize: put as much as possible in Server Components (they don't ship JS to the browser). Push <code>use client</code> as far down the tree as possible. This keeps your dashboard fast on mobile.</div>
+        <div class="topic-resource">Start → <span>Next.js official docs: "Building Your Application" — the rendering section specifically</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c3)"></div>
+        <div>
+          <div class="topic-name">TanStack Query — Server State Patterns</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">TanStack Query handles all your async data — fetching, caching, background refresh, and optimistic updates. Getting cache invalidation wrong means stale balances shown to users after a deposit.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Query keys — designing a consistent key strategy</div>
+          <div class="concept-chip hi">Cache invalidation after mutations</div>
+          <div class="concept-chip hi">Optimistic updates with rollback</div>
+          <div class="concept-chip hi">staleTime vs gcTime</div>
+          <div class="concept-chip hi">Dependent queries</div>
+          <div class="concept-chip">Prefetching for server-side hydration</div>
+          <div class="concept-chip">useInfiniteQuery for transaction history pagination</div>
+        </div>
+        <div class="topic-why">Key design to think about early: after a deposit mutation succeeds, which queries need to be invalidated? The account balance query and the transaction list query — both. Design your query key structure so you can invalidate them cleanly by key prefix.</div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c3)"></div>
+        <div>
+          <div class="topic-name">React Hook Form + Zod — Form Architecture</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Every employee action — deposit, loan registration, EMI payment — is a form. Forms in a financial app need strong validation, clear errors, and no double-submission.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">zodResolver integration</div>
+          <div class="concept-chip hi">Controlled vs uncontrolled inputs</div>
+          <div class="concept-chip hi">Disabling submit during mutation (isSubmitting)</div>
+          <div class="concept-chip hi">Error message display patterns</div>
+          <div class="concept-chip">useFieldArray for dynamic loan collateral fields</div>
+          <div class="concept-chip">Form state persistence (partial saves)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c3)"></div>
+        <div>
+          <div class="topic-name">PWA — Service Workers and Offline Strategy</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Your PWA needs to be installable and partially usable on poor network — Nepal connectivity varies. Understand what you can safely cache vs what must always be fresh.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Service worker lifecycle (install, activate, fetch)</div>
+          <div class="concept-chip hi">Cache strategies — Cache First, Network First, Stale-While-Revalidate</div>
+          <div class="concept-chip hi">Web App Manifest — icons, display mode, theme</div>
+          <div class="concept-chip hi">What to cache: static assets yes, financial data NO</div>
+          <div class="concept-chip">Background sync for offline form submissions</div>
+          <div class="concept-chip">Push notification permission flow</div>
+        </div>
+        <div class="topic-why">Critical rule: never cache financial data (balances, transactions) in a service worker. A member seeing a stale balance is worse than a loading state.</div>
+        <div class="topic-resource">Start → <span>web.dev/learn/pwa — Google's free PWA course</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 04 — ARCHITECTURE PATTERNS
+══════════════════════════════════════ -->
+<div class="domain" id="d4">
+  <div class="domain-header">
+    <div class="domain-num">04</div>
+    <div class="domain-title" style="color:var(--c4)">Architecture Patterns</div>
+    <div class="domain-badge" style="background:rgba(167,139,250,0.08); color:var(--c4); border:1px solid rgba(167,139,250,0.15)">High Leverage</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c4)"></div>
+        <div>
+          <div class="topic-name">Repository Pattern — Separating DB Logic from Business Logic</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Without this pattern, your tRPC handlers will turn into 100-line blobs of Prisma calls mixed with business rules. As the app grows, you'll be unable to test the logic without touching the DB.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Thin tRPC handlers that call service functions</div>
+          <div class="concept-chip hi">Service layer holds business rules</div>
+          <div class="concept-chip hi">Repository layer holds DB queries</div>
+          <div class="concept-chip hi">Dependency injection for testability</div>
+          <div class="concept-chip">When this pattern is overkill (early stages)</div>
+        </div>
+        <div class="topic-why">Suggested structure: <code>router → service → repository</code>. The tRPC router handles HTTP/auth. The service (e.g. <code>depositService.deposit()</code>) holds business rules. The repository does the Prisma query. Each layer is independently testable.</div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c4)"></div>
+        <div>
+          <div class="topic-name">Error Handling Architecture — Typed Errors</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Generic "something went wrong" errors in a financial app mean employees can't diagnose what failed. An insufficient balance error and a network error need different UI responses.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Custom error classes (InsufficientBalanceError, LoanAlreadyClosedError)</div>
+          <div class="concept-chip hi">TRPCError with code and message</div>
+          <div class="concept-chip hi">Discriminated union Result types (success | error)</div>
+          <div class="concept-chip hi">Prisma error codes (P2002 unique, P2025 not found)</div>
+          <div class="concept-chip">neverthrow library — railway-oriented error handling</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c4)"></div>
+        <div>
+          <div class="topic-name">Monorepo Architecture with Turborepo</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Setting up your repo structure right from the start costs 2 hours and saves weeks of painful refactoring when Phase 3 (native apps) begins. Understand the tradeoffs before you init your first project.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">workspace packages (apps/ vs packages/)</div>
+          <div class="concept-chip hi">Shared packages — types, API client, utilities</div>
+          <div class="concept-chip hi">Turborepo pipeline — build dependencies between packages</div>
+          <div class="concept-chip hi">Internal package TypeScript references</div>
+          <div class="concept-chip">Remote caching for CI speed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c4)"></div>
+        <div>
+          <div class="topic-name">Feature Flags &amp; Incremental Rollout</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag">Useful</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Your Phase 2 and Phase 3 features need to be built, tested, and merged into the main codebase without being visible to users. Feature flags enable this without long-lived branches.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Environment variable based flags (simplest)</div>
+          <div class="concept-chip hi">Role-based feature access (employees see Phase 2 features first)</div>
+          <div class="concept-chip">Database-driven feature flags for per-user toggles</div>
+        </div>
+        <div class="topic-why">Simple implementation: a <code>featureFlags</code> object checked at the route level. Member self-deposit feature is behind a flag — enable it per member as Phase 2 rolls out.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 05 — AUTH & SECURITY
+══════════════════════════════════════ -->
+<div class="domain" id="d5">
+  <div class="domain-header">
+    <div class="domain-num">05</div>
+    <div class="domain-title" style="color:var(--c5)">Auth &amp; Security</div>
+    <div class="domain-badge" style="background:rgba(244,114,182,0.08); color:var(--c5); border:1px solid rgba(244,114,182,0.15)">Non-Negotiable</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c5)"></div>
+        <div>
+          <div class="topic-name">JWTs — What They Are and Where They Can Go Wrong</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Supabase Auth issues JWTs. Your entire access control system runs on verifying these tokens correctly. Misverification = unauthorized access to financial data.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">JWT structure — header, payload, signature</div>
+          <div class="concept-chip hi">Signature verification — never skip it</div>
+          <div class="concept-chip hi">Token expiry and refresh token rotation</div>
+          <div class="concept-chip hi">Where to store tokens (httpOnly cookies vs localStorage)</div>
+          <div class="concept-chip hi">Role claims in JWT payload</div>
+          <div class="concept-chip">Algorithm confusion attacks (alg: none)</div>
+        </div>
+        <div class="topic-why">Rule: never store JWTs in localStorage. Always use httpOnly cookies. Supabase's SSR helper handles this for Next.js — understand why it does it this way.</div>
+        <div class="topic-resource">Start → <span>jwt.io has a good explainer. Then read: "Stop using JWT for sessions" (article) to understand tradeoffs.</span></div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c5)"></div>
+        <div>
+          <div class="topic-name">RBAC — Role-Based Access Control Implementation</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Your app has 3 roles with a strict permission matrix. Understand the right places to enforce this — and why enforcing it in only one place is insufficient.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Middleware-level route protection (Next.js middleware)</div>
+          <div class="concept-chip hi">tRPC procedure-level enforcement</div>
+          <div class="concept-chip hi">DB-level via Supabase RLS</div>
+          <div class="concept-chip hi">Defence in depth — all three layers together</div>
+          <div class="concept-chip">ABAC (attribute-based) vs RBAC — when RBAC isn't enough</div>
+        </div>
+        <div class="topic-why">Concrete risk: if you only protect routes in the UI and a tRPC procedure is left unprotected, any authenticated user can call it directly via a fetch() call. The API layer must always enforce roles independently of the UI.</div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c5)"></div>
+        <div>
+          <div class="topic-name">OWASP Top 10 — Relevant Subset for Financial Apps</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">You don't need to study all 10 equally. These are the ones that directly apply to your app's architecture.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Broken Access Control — #1, directly relevant</div>
+          <div class="concept-chip hi">Injection (SQL injection via raw queries)</div>
+          <div class="concept-chip hi">Insecure Direct Object References (IDOR) — fetching another member's data by ID</div>
+          <div class="concept-chip hi">Security Misconfiguration — exposed Supabase service key</div>
+          <div class="concept-chip">Mass assignment — Prisma protects you, but know why</div>
+        </div>
+        <div class="topic-why">IDOR is particularly relevant: if your GET /account/:id endpoint doesn't check that the requesting user owns that account, any member can view any account by guessing UUIDs. This must be checked at the tRPC layer, not just the UI.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ══════════════════════════════════════
+     DOMAIN 06 — OPS / DEPLOY
+══════════════════════════════════════ -->
+<div class="domain" id="d6">
+  <div class="domain-header">
+    <div class="domain-num">06</div>
+    <div class="domain-title" style="color:var(--c6)">Ops &amp; Deployment</div>
+    <div class="domain-badge" style="background:rgba(250,204,21,0.08); color:var(--c6); border:1px solid rgba(250,204,21,0.15)">Production Readiness</div>
+  </div>
+  <div class="topics">
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c6)"></div>
+        <div>
+          <div class="topic-name">Database Migrations in Production</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">Running <code>prisma migrate deploy</code> on a live financial DB without a plan is how you cause downtime or data loss. This is different from running migrations in development.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">prisma migrate dev vs migrate deploy</div>
+          <div class="concept-chip hi">Expand/contract pattern for zero-downtime migrations</div>
+          <div class="concept-chip hi">Never drop columns or rename them in one step</div>
+          <div class="concept-chip hi">Locking behaviour of ALTER TABLE in Postgres</div>
+          <div class="concept-chip">Migration rollback strategies</div>
+          <div class="concept-chip">Baseline migrations for existing databases</div>
+        </div>
+        <div class="topic-why">The expand/contract pattern: to rename a column, first add the new column (expand), backfill the data, update the app to use the new column, then drop the old one (contract). Doing it in one migration locks the table and drops data if anything fails.</div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c6)"></div>
+        <div>
+          <div class="topic-name">Environment Management &amp; Secrets</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">The most common catastrophic mistake: committing the Supabase service key (which bypasses RLS) to a public repo. Understand which keys are safe on the client and which must never leave the server.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">NEXT_PUBLIC_ prefix — what it means (bundled into client JS)</div>
+          <div class="concept-chip hi">Supabase anon key (safe, public) vs service key (secret, server-only)</div>
+          <div class="concept-chip hi">Vercel environment variables per environment</div>
+          <div class="concept-chip hi">.env.local vs .env.production</div>
+          <div class="concept-chip">Secret rotation strategy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c6)"></div>
+        <div>
+          <div class="topic-name">Observability — Logging, Errors, and Performance</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag important">Important</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">When a deposit fails at 9pm on a Friday, you need to know exactly which line threw, what the input was, and what the DB state was — without asking the employee to reproduce it.</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Sentry — error capture, stack traces, context</div>
+          <div class="concept-chip hi">Structured logging (JSON logs, not console.log strings)</div>
+          <div class="concept-chip hi">Vercel log drains</div>
+          <div class="concept-chip">What to log vs what to keep out of logs (never log full request bodies with PII)</div>
+          <div class="concept-chip">Correlation IDs for tracing a request through logs</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic">
+      <div class="topic-top">
+        <div class="topic-marker" style="background:var(--c6)"></div>
+        <div>
+          <div class="topic-name">Backup &amp; Disaster Recovery</div>
+          <div class="priority-bar"><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-on"></div><div class="p-dot p-off"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="topic-tags"><span class="tag critical">Critical</span></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="topic-body">
+        <div class="topic-why">This is a financial system managing real members' money. You need a clear answer to: "if the database was deleted right now, what's our recovery path and how much data do we lose?"</div>
+        <div class="topic-concepts">
+          <div class="concept-chip hi">Supabase automated backups (daily on Pro, PITR on Pro+)</div>
+          <div class="concept-chip hi">Point-in-time recovery — what it means and when you need it</div>
+          <div class="concept-chip hi">Manual export + pg_dump for additional safety</div>
+          <div class="concept-chip hi">RTO vs RPO — Recovery Time Objective vs Recovery Point Objective</div>
+          <div class="concept-chip">Testing your recovery procedure — don't assume backups work</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- STUDY ORDER -->
+<div class="callout callout-green">
+  <div>📋</div>
+  <div><strong>Rough study sequence</strong>
+  TypeScript deeply → Zod → PostgreSQL (ACID, transactions, indexes) → Prisma transactions → tRPC middleware pattern → Next.js App Router rendering model → TanStack Query cache invalidation → JWTs + RBAC → Supabase RLS → Financial data patterns (idempotency, immutable ledger) → Migration strategy → Observability basics.
+  This order means each concept directly unlocks the next.
+  </div>
+</div>
+
+<div style="margin-top:48px; padding-top:28px; border-top:1px solid var(--border); display:flex; gap:40px; flex-wrap:wrap;">
+  <div>
+    <div style="font-family:'Syne Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:6px;">Total Topics</div>
+    <div style="font-size:28px; font-family:'Syne',sans-serif; font-weight:800; color:var(--text);">24</div>
+  </div>
+  <div>
+    <div style="font-family:'Syne Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:6px;">Critical (must know cold)</div>
+    <div style="font-size:28px; font-family:'Syne',sans-serif; font-weight:800; color:var(--c1);">10</div>
+  </div>
+  <div>
+    <div style="font-family:'Syne Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:6px;">Domains</div>
+    <div style="font-size:28px; font-family:'Syne',sans-serif; font-weight:800; color:var(--text);">6</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.topic-top').forEach(top => {
+  top.addEventListener('click', () => {
+    top.closest('.topic').classList.toggle('open');
+  });
+});
+</script>
+</body>
+</html>

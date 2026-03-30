@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SACCO — Stack Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f5f0e8;
+  --bg2: #ede8df;
+  --bg3: #e4ddd2;
+  --surface: #faf8f4;
+  --border: #d8d1c5;
+  --border-strong: #bfb5a6;
+  --text: #1a1713;
+  --text-muted: #7a7164;
+  --text-dim: #4a4540;
+  --green: #1a6b3c;
+  --green-bg: #e8f5ee;
+  --green-border: #b8dfc8;
+  --red: #8b2020;
+  --red-bg: #faeaea;
+  --red-border: #e8c0c0;
+  --amber: #7a4f00;
+  --amber-bg: #fdf3dc;
+  --amber-border: #e8d49a;
+  --blue: #1a3f7a;
+  --blue-bg: #e8eef8;
+  --blue-border: #b8cce8;
+  --ink: #1a1713;
+  --rec: #1a6b3c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; top: 0; left: 0;
+  width: 220px; height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  overflow-y: auto;
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: 0 20px 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.sidebar-logo .brand {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.sidebar-logo .sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.nav-group { padding: 0 10px; margin-bottom: 6px; }
+.nav-label {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  padding: 8px 10px 4px;
+}
+.nav-item {
+  display: block;
+  padding: 6px 10px;
+  border-radius: 5px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12.5px;
+  transition: all 0.12s;
+}
+.nav-item:hover { background: var(--bg2); color: var(--text); }
+.nav-item.active { background: var(--bg3); color: var(--text); font-weight: 500; }
+
+/* MAIN */
+.main {
+  margin-left: 220px;
+  padding: 0 56px 100px 56px;
+  max-width: calc(100vw - 220px);
+}
+
+/* HEADER */
+.page-header {
+  padding: 60px 0 44px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 56px;
+}
+.eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 52px;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+h1 em { font-style: italic; }
+.header-desc {
+  font-size: 15px;
+  color: var(--text-dim);
+  max-width: 600px;
+  line-height: 1.7;
+  font-weight: 300;
+}
+.header-pills {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin-top: 22px;
+}
+.pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  background: var(--surface);
+}
+
+/* SECTIONS */
+.section { margin-bottom: 68px; }
+h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.section-intro {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  max-width: 620px;
+  font-weight: 300;
+  line-height: 1.7;
+}
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 56px 0;
+}
+
+/* OPTION CARDS */
+.options-stack { display: flex; flex-direction: column; gap: 12px; }
+.option-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.option-card:hover { border-color: var(--border-strong); }
+.option-card.recommended {
+  border-color: var(--green-border);
+  background: #fdfcf9;
+}
+.option-card.avoid {
+  border-color: var(--red-border);
+  opacity: 0.8;
+}
+.option-header {
+  padding: 16px 20px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.option-card.recommended .option-header { border-color: var(--green-border); }
+.option-card.avoid .option-header { border-color: var(--red-border); }
+.option-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  background: var(--bg2);
+}
+.option-title-wrap { flex: 1; }
+.option-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.option-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  margin-top: 2px;
+}
+.verdict-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: 'Geist Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.v-rec { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.v-alt { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+.v-no  { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.option-body {
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.pro-con h4 {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+.pro-con.pros h4 { color: var(--green); }
+.pro-con.cons h4 { color: var(--red); }
+.pro-con ul { list-style: none; }
+.pro-con ul li {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  padding: 3px 0;
+  display: flex; gap: 8px; align-items: flex-start;
+  line-height: 1.5;
+}
+.pro-con ul li::before {
+  flex-shrink: 0;
+  font-size: 11px;
+  margin-top: 2px;
+  font-family: 'Geist Mono', monospace;
+}
+.pros ul li::before { content: '+'; color: var(--green); }
+.cons ul li::before { content: '−'; color: var(--red); }
+.option-reason {
+  padding: 12px 20px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.6;
+}
+.option-card.recommended .option-reason {
+  background: var(--green-bg);
+  border-color: var(--green-border);
+  color: var(--green);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* FINAL STACK TABLE */
+.stack-summary {
+  background: var(--ink);
+  color: #f5f0e8;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.stack-summary-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.stack-summary-header h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  color: #f5f0e8;
+  font-weight: 400;
+  letter-spacing: -0.3px;
+}
+.stack-summary-header p {
+  font-size: 12.5px;
+  color: rgba(245,240,232,0.55);
+  margin-top: 4px;
+}
+.stack-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr;
+  padding: 14px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  align-items: center;
+  gap: 20px;
+}
+.stack-row:last-child { border-bottom: none; }
+.stack-row:hover { background: rgba(255,255,255,0.04); }
+.stack-layer {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(245,240,232,0.4);
+}
+.stack-choice {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f5f0e8;
+  display: flex; align-items: center; gap: 8px;
+}
+.stack-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #6ee7a8;
+  flex-shrink: 0;
+}
+.stack-why {
+  font-size: 12px;
+  color: rgba(245,240,232,0.5);
+  font-weight: 300;
+}
+
+/* ARCHITECTURE DIAGRAM */
+.arch-diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px;
+  overflow-x: auto;
+}
+
+/* CALLOUTS */
+.callout {
+  display: flex; gap: 14px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin: 20px 0;
+  border-left: 3px solid;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.callout-green { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.callout-amber { background: var(--amber-bg); border-color: var(--amber); color: var(--amber); }
+.callout-blue  { background: var(--blue-bg);  border-color: var(--blue);  color: var(--blue);  }
+.callout strong { display: block; margin-bottom: 3px; }
+.callout-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+/* FLOW */
+.flow {
+  display: flex; align-items: center; gap: 0;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.flow-node {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-family: 'Geist Mono', monospace;
+  color: var(--text-dim);
+}
+.flow-node.highlight {
+  background: var(--ink);
+  color: #f5f0e8;
+  border-color: var(--ink);
+  font-weight: 500;
+}
+.flow-arrow {
+  padding: 0 8px;
+  color: var(--border-strong);
+  font-size: 16px;
+}
+
+/* CODE */
+code {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  background: var(--bg3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+pre {
+  background: var(--ink);
+  color: #e8e0d4;
+  border-radius: 8px;
+  padding: 20px 22px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+pre .c  { color: #6b6560; }
+pre .k  { color: #9ecfb0; }
+pre .s  { color: #e8c49a; }
+pre .t  { color: #9ab8e8; }
+
+/* COMPARISON TABLE */
+.cmp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
+.cmp-table th {
+  text-align: left; padding: 10px 14px;
+  background: var(--bg3);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+.cmp-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  color: var(--text-dim);
+  vertical-align: top;
+}
+.cmp-table tr:hover td { background: rgba(0,0,0,0.02); }
+.cmp-table td:first-child {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+.tick { color: var(--green); font-weight: 600; }
+.cross { color: var(--red); }
+.neutral { color: var(--text-muted); }
+
+/* PHASE STRIP */
+.phase-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-top: 8px;
+}
+.phase-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: var(--surface);
+}
+.phase-box .num {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.phase-box h4 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 16px; color: var(--ink);
+  margin-bottom: 10px; font-weight: 400;
+}
+.phase-box ul { list-style: none; }
+.phase-box ul li {
+  font-size: 12.5px; color: var(--text-dim);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  display: flex; gap: 8px;
+}
+.phase-box ul li:last-child { border: none; }
+.phase-box ul li::before {
+  content: '→';
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@media (max-width: 860px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 24px; }
+  .option-body { grid-template-columns: 1fr; }
+  .stack-row { grid-template-columns: 1fr; gap: 4px; }
+  .phase-strip { grid-template-columns: 1fr; }
+  h1 { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">SACCO<br/>Stack Plan</div>
+    <div class="sub">v1.0 — 2025</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item active" href="#constraints">Constraints</a>
+    <a class="nav-item" href="#summary">Final Stack</a>
+    <a class="nav-item" href="#architecture">Architecture</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Decisions</div>
+    <a class="nav-item" href="#frontend">Frontend Framework</a>
+    <a class="nav-item" href="#backend">Backend Layer</a>
+    <a class="nav-item" href="#database">Database Hosting</a>
+    <a class="nav-item" href="#auth">Auth Provider</a>
+    <a class="nav-item" href="#api">API Layer</a>
+    <a class="nav-item" href="#state">State Management</a>
+    <a class="nav-item" href="#native">Phase 3 — Native</a>
+    <a class="nav-item" href="#deploy">Deployment</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Extras</div>
+    <a class="nav-item" href="#tooling">Essential Tooling</a>
+    <a class="nav-item" href="#phases">Rollout</a>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="eyebrow">SACCO Management — Tech Stack Plan</div>
+  <h1>Stack &amp;<br/><em>Architecture</em></h1>
+  <p class="header-desc">
+    Every decision below is made in context of your exact constraints — PWA-first, Nepal SACCO, progressive rollout to native, one developer or a small team.
+  </p>
+  <div class="header-pills">
+    <span class="pill">PWA → Android → iOS</span>
+    <span class="pill">PostgreSQL schema already locked</span>
+    <span class="pill">Employee-operated Phase 1</span>
+    <span class="pill">Small team</span>
+    <span class="pill">Nepal deployment</span>
+  </div>
+</div>
+
+<!-- CONSTRAINTS -->
+<div class="section" id="constraints">
+  <h2>Governing Constraints</h2>
+  <p class="section-intro">These are the facts that eliminate options before even evaluating them.</p>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+    <table class="cmp-table">
+      <thead><tr><th>Constraint</th><th>Implication</th></tr></thead>
+      <tbody>
+        <tr><td>PWA first, native later</td><td>Frontend must be React-based to share code with React Native in Phase 3. Vue/Svelte/Angular create a dead end.</td></tr>
+        <tr><td>Postgres schema already designed</td><td>Database is PostgreSQL. Any backend/ORM must speak Postgres natively. No Firebase Firestore as primary DB.</td></tr>
+        <tr><td>Financial data — atomicity required</td><td>DB transactions are mandatory. Serverless DBs with cold starts (like PlanetScale in HTTP mode) are risky. Need a stable persistent connection.</td></tr>
+        <tr><td>Small team / solo developer</td><td>Minimize context switching. Prefer TypeScript end-to-end. Fewer runtimes, fewer languages.</td></tr>
+        <tr><td>Nepal connectivity</td><td>Server should be hosted in a region close to Asia-Pacific (Singapore). Heavy client-side rendering is fine — members are on mobile, employees on desktop.</td></tr>
+        <tr><td>Extensible for self-service Phase 2+</td><td>Backend must expose a real API, not just Next.js server actions. Mobile apps need an API to call.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- FINAL STACK SUMMARY -->
+<div class="section" id="summary">
+  <h2>Final Recommended Stack</h2>
+  <p class="section-intro">The full picture, before the reasoning. Details follow below.</p>
+  <div class="stack-summary">
+    <div class="stack-summary-header">
+      <h3>The SACCO Stack</h3>
+      <p>TypeScript throughout. One language, one mental model, all the way to native.</p>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Frontend</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Next.js 15 (App Router)</div>
+      <div class="stack-why">PWA + SSR + API routes in one project. React base = shared code with React Native later.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Styling</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Tailwind CSS + shadcn/ui</div>
+      <div class="stack-why">Fast component scaffolding. shadcn gives you unstyled-but-accessible primitives you fully own.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Backend API</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Next.js Route Handlers + tRPC</div>
+      <div class="stack-why">tRPC gives type-safe API calls from your Next.js frontend without a separate server process in Phase 1.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Database ORM</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Prisma</div>
+      <div class="stack-why">Type-safe queries, migration tooling, schema-as-code. Maps directly to your PostgreSQL design.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Database Host</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Supabase (PostgreSQL)</div>
+      <div class="stack-why">Managed Postgres with built-in Row Level Security, Storage, and Realtime. Free tier is generous.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Auth</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Supabase Auth</div>
+      <div class="stack-why">Phone OTP, Google, Apple — all included. Native SDK for Phase 3. RLS ties directly to the auth session.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Server State</div>
+      <div class="stack-choice"><span class="stack-dot"></span>TanStack Query</div>
+      <div class="stack-why">Cache, refetch, optimistic updates. Works with tRPC. Carries over to React Native with zero changes.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Client State</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Zustand</div>
+      <div class="stack-why">Tiny footprint for UI state (modals, drawers, session context). Not Redux.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Validation</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Zod</div>
+      <div class="stack-why">Schema validation shared between frontend forms and backend input parsing. One schema, two uses.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">PWA</div>
+      <div class="stack-choice"><span class="stack-dot"></span>@ducanh2912/next-pwa</div>
+      <div class="stack-why">Workbox-based service worker for Next.js. Offline support and home screen install.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">File Storage</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Supabase Storage</div>
+      <div class="stack-why">KYC documents, loan collateral photos, expense receipts. Already in your Supabase project.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Phase 3 Native</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Expo (React Native)</div>
+      <div class="stack-why">Shares your tRPC client, TanStack Query, Zod schemas, and Supabase Auth SDK verbatim.</div>
+    </div>
+    <div class="stack-row">
+      <div class="stack-layer">Deployment</div>
+      <div class="stack-choice"><span class="stack-dot"></span>Vercel + Supabase</div>
+      <div class="stack-why">Vercel for Next.js (Singapore edge region). Supabase already handles DB + Auth + Storage.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- ARCHITECTURE DIAGRAM -->
+<div class="section" id="architecture">
+  <h2>Architecture Overview</h2>
+  <p class="section-intro">How the pieces connect, and what calls what.</p>
+  <div class="arch-diagram">
+    <svg viewBox="0 0 820 440" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; min-width:640px;">
+      <defs>
+        <marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#bfb5a6"/>
+        </marker>
+        <marker id="a2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0.5 L0,6.5 L6,3.5 z" fill="#1a6b3c"/>
+        </marker>
+      </defs>
+
+      <!-- CLIENTS -->
+      <rect x="20" y="30" width="120" height="52" rx="7" fill="#f5f0e8" stroke="#bfb5a6" stroke-width="1.5"/>
+      <text x="80" y="52" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#4a4540">PWA Browser</text>
+      <text x="80" y="67" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">Next.js 15</text>
+
+      <rect x="20" y="108" width="120" height="52" rx="7" fill="#f5f0e8" stroke="#bfb5a6" stroke-width="1.5"/>
+      <text x="80" y="130" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#4a4540">Android App</text>
+      <text x="80" y="145" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">Expo (Phase 3)</text>
+
+      <rect x="20" y="186" width="120" height="52" rx="7" fill="#f5f0e8" stroke="#bfb5a6" stroke-width="1.5"/>
+      <text x="80" y="208" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#4a4540">iOS App</text>
+      <text x="80" y="223" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">Expo (Phase 3)</text>
+
+      <!-- SUPABASE AUTH -->
+      <rect x="20" y="310" width="120" height="52" rx="7" fill="#e8f5ee" stroke="#b8dfc8" stroke-width="1.5"/>
+      <text x="80" y="331" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#1a6b3c">Supabase</text>
+      <text x="80" y="346" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#1a6b3c">Auth</text>
+
+      <!-- AUTH LINE -->
+      <line x1="80" y1="238" x2="80" y2="310" stroke="#b8dfc8" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#a2)"/>
+      <text x="88" y="279" font-family="Geist" font-size="9" fill="#1a6b3c">JWT</text>
+
+      <!-- VERCEL / NEXT.JS BACKEND -->
+      <rect x="220" y="130" width="200" height="180" rx="9" fill="#1a1713" stroke="#1a1713"/>
+      <text x="320" y="156" text-anchor="middle" font-family="Geist Mono" font-size="9.5" fill="rgba(245,240,232,0.5)" letter-spacing="1">VERCEL — NEXT.JS</text>
+
+      <rect x="234" y="166" width="172" height="34" rx="6" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="320" y="188" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#f5f0e8">tRPC Router</text>
+
+      <rect x="234" y="212" width="172" height="34" rx="6" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="320" y="234" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#f5f0e8">Auth Middleware</text>
+      <text x="320" y="246" text-anchor="middle" font-family="Geist" font-size="8.5" fill="rgba(245,240,232,0.45)">role check + JWT verify</text>
+
+      <rect x="234" y="258" width="172" height="34" rx="6" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+      <text x="320" y="280" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#f5f0e8">Prisma ORM</text>
+      <text x="320" y="292" text-anchor="middle" font-family="Geist" font-size="8.5" fill="rgba(245,240,232,0.45)">type-safe DB queries + transactions</text>
+
+      <!-- CLIENT → BACKEND ARROWS -->
+      <line x1="140" y1="56" x2="220" y2="185" stroke="#bfb5a6" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="140" y1="134" x2="220" y2="210" stroke="#bfb5a6" stroke-width="1.2" marker-end="url(#a)"/>
+      <line x1="140" y1="212" x2="220" y2="240" stroke="#bfb5a6" stroke-width="1.2" marker-end="url(#a)"/>
+      <text x="162" y="148" font-family="Geist Mono" font-size="9" fill="#7a7164">tRPC</text>
+      <text x="155" y="160" font-family="Geist Mono" font-size="9" fill="#7a7164">+ TQ</text>
+
+      <!-- SUPABASE CLUSTER -->
+      <rect x="510" y="30" width="285" height="380" rx="10" fill="#fdfcf9" stroke="#b8dfc8" stroke-width="1.5"/>
+      <text x="652" y="56" text-anchor="middle" font-family="Geist Mono" font-size="10" fill="#1a6b3c" letter-spacing="1">SUPABASE PROJECT</text>
+
+      <rect x="528" y="70" width="249" height="64" rx="7" fill="#e8f5ee" stroke="#b8dfc8" stroke-width="1"/>
+      <text x="652" y="94" text-anchor="middle" font-family="Geist Mono" font-size="10.5" fill="#1a6b3c">PostgreSQL</text>
+      <text x="652" y="110" text-anchor="middle" font-family="Geist" font-size="9" fill="#1a6b3c">Your 13-table schema + RLS policies</text>
+      <text x="652" y="124" text-anchor="middle" font-family="Geist Mono" font-size="8.5" fill="#7a7164">Singapore region (ap-southeast-1)</text>
+
+      <rect x="528" y="152" width="249" height="52" rx="7" fill="#f5f0e8" stroke="#d8d1c5" stroke-width="1"/>
+      <text x="652" y="175" text-anchor="middle" font-family="Geist Mono" font-size="10.5" fill="#4a4540">Auth Service</text>
+      <text x="652" y="189" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">Phone OTP · Google OAuth · Apple OAuth</text>
+
+      <rect x="528" y="222" width="249" height="52" rx="7" fill="#f5f0e8" stroke="#d8d1c5" stroke-width="1"/>
+      <text x="652" y="245" text-anchor="middle" font-family="Geist Mono" font-size="10.5" fill="#4a4540">Storage</text>
+      <text x="652" y="259" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">KYC docs · loan collateral · receipts</text>
+
+      <rect x="528" y="292" width="249" height="52" rx="7" fill="#f5f0e8" stroke="#d8d1c5" stroke-width="1"/>
+      <text x="652" y="315" text-anchor="middle" font-family="Geist Mono" font-size="10.5" fill="#4a4540">Realtime</text>
+      <text x="652" y="329" text-anchor="middle" font-family="Geist" font-size="9" fill="#7a7164">Live notifications (Phase 2)</text>
+
+      <rect x="528" y="362" width="249" height="36" rx="7" fill="#f5f0e8" stroke="#d8d1c5" stroke-width="1"/>
+      <text x="652" y="385" text-anchor="middle" font-family="Geist Mono" font-size="9.5" fill="#4a4540">Edge Functions (optional future)</text>
+
+      <!-- BACKEND → SUPABASE ARROWS -->
+      <line x1="420" y1="183" x2="510" y2="102" stroke="#bfb5a6" stroke-width="1.5" marker-end="url(#a)"/>
+      <line x1="420" y1="183" x2="510" y2="178" stroke="#bfb5a6" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#a)"/>
+      <line x1="420" y1="183" x2="510" y2="248" stroke="#bfb5a6" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#a)"/>
+      <text x="454" y="136" font-family="Geist Mono" font-size="8.5" fill="#7a7164">Prisma</text>
+      <text x="454" y="148" font-family="Geist Mono" font-size="8.5" fill="#7a7164">conn pool</text>
+
+      <!-- AUTH VERIFY LINE -->
+      <line x1="140" y1="336" x2="510" y2="180" stroke="#b8dfc8" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#a2)"/>
+      <text x="292" y="310" font-family="Geist" font-size="8.5" fill="#1a6b3c">verify JWT</text>
+    </svg>
+  </div>
+  <div class="callout callout-blue" style="margin-top:16px;">
+    <div class="callout-icon">📱</div>
+    <div><strong>Phase 3 native apps</strong> call the same tRPC API and use the same Supabase Auth SDK. No new backend needed — just a new client.</div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- FRONTEND -->
+<div class="section" id="frontend">
+  <h2>Frontend Framework</h2>
+  <p class="section-intro">The biggest decision. Determines your Phase 3 native path.</p>
+  <div class="options-stack">
+
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">⚡</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Next.js 15 (App Router) <span class="verdict-badge v-rec">Recommended</span></div>
+          <div class="option-subtitle">React framework — SSR + RSC + PWA + API routes</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros">
+          <h4>For</h4>
+          <ul>
+            <li>React base = React Native in Phase 3 with shared code</li>
+            <li>App Router supports server components for fast dashboard loads</li>
+            <li>API Route Handlers serve as your backend in Phase 1</li>
+            <li>Vercel deploys it in one click, scales globally</li>
+            <li>Best-in-class TypeScript support</li>
+            <li>Huge ecosystem — every library has a Next.js guide</li>
+          </ul>
+        </div>
+        <div class="pro-con cons">
+          <h4>Against</h4>
+          <ul>
+            <li>App Router has a learning curve if you're used to Pages Router</li>
+            <li>Server Components add mental overhead early on</li>
+            <li>Cold starts on Vercel free tier (negligible for internal app)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="option-reason">✓ Chosen. React foundation is non-negotiable for Phase 3 native continuity. Next.js specifically adds SSR, built-in routing, and API layer — removing the need for a separate backend project in Phase 1.</div>
+    </div>
+
+    <div class="option-card">
+      <div class="option-header">
+        <div class="option-icon">🏃</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Vite + React (SPA) <span class="verdict-badge v-alt">Alternative</span></div>
+          <div class="option-subtitle">Pure client-side, no SSR</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>Simpler mental model than App Router</li>
+          <li>Fastest local dev experience</li>
+          <li>React Native still possible in Phase 3</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>No built-in API routes — need a separate backend from day one</li>
+          <li>Slower initial load (no SSR) — bad for mobile in Nepal</li>
+          <li>More repo complexity</li>
+        </ul></div>
+      </div>
+      <div class="option-reason" style="font-style:italic; color:var(--text-muted);">Skip. Next.js gives everything Vite gives + SSR + API layer for free.</div>
+    </div>
+
+    <div class="option-card avoid">
+      <div class="option-header">
+        <div class="option-icon">🚫</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Vue / Nuxt or Svelte / SvelteKit <span class="verdict-badge v-no">Avoid</span></div>
+          <div class="option-subtitle">Different rendering paradigm</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>Both are excellent frameworks</li>
+          <li>SvelteKit is notably fast</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>Phase 3 native means React Native or Flutter — neither uses Vue/Svelte</li>
+          <li>You'd rewrite your entire UI layer for native apps</li>
+          <li>Ecosystem is smaller for financial app tooling</li>
+        </ul></div>
+      </div>
+      <div class="option-reason" style="font-style:italic; color:var(--red);">Hard no. Creates a dead end at Phase 3. Good frameworks, wrong context.</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- BACKEND -->
+<div class="section" id="backend">
+  <h2>Backend Layer</h2>
+  <p class="section-intro">Where your business logic and DB transactions live.</p>
+  <div class="options-stack">
+
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">🔗</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Next.js Route Handlers + tRPC <span class="verdict-badge v-rec">Recommended</span></div>
+          <div class="option-subtitle">Monorepo — frontend and API in one Next.js project</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>One project, one deploy, one language</li>
+          <li>tRPC gives 100% type-safe API — no manual type syncing between front and back</li>
+          <li>Shared Zod schemas for validation on both sides</li>
+          <li>When Phase 3 needs a standalone API, you extract the tRPC router to a separate service — no logic rewrite</li>
+          <li>No CORS configuration, no API versioning overhead in Phase 1</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>Next.js Route Handlers are stateless — no persistent worker threads</li>
+          <li>Background jobs (e.g. nightly interest cron) need an external scheduler</li>
+          <li>Vercel function timeout limit (10–60s depending on plan)</li>
+        </ul></div>
+      </div>
+      <div class="option-reason">✓ Chosen. The type safety from tRPC alone saves days of bug hunting in a financial app. Background jobs are handled by Supabase pg_cron or a tiny separate cron service.</div>
+    </div>
+
+    <div class="option-card">
+      <div class="option-header">
+        <div class="option-icon">🛠️</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Separate Node.js + Fastify / Express <span class="verdict-badge v-alt">Alternative</span></div>
+          <div class="option-subtitle">Dedicated API server, separate repo/deploy</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>More control over server lifecycle, connection pooling</li>
+          <li>Better for long-running processes and WebSockets</li>
+          <li>Familiar REST pattern if team knows it</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>Two projects to maintain, two deploys, two CI pipelines</li>
+          <li>Manual type sharing between frontend and backend</li>
+          <li>No productivity gain in Phase 1 for the extra complexity</li>
+        </ul></div>
+      </div>
+      <div class="option-reason" style="font-style:italic; color:var(--text-muted);">Worth revisiting in Phase 3 if you need persistent connections or high-volume background processing. Not now.</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- DATABASE -->
+<div class="section" id="database">
+  <h2>Database Hosting</h2>
+  <p class="section-intro">Your schema is PostgreSQL. The question is where to host it.</p>
+  <div class="options-stack">
+
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">🟢</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Supabase <span class="verdict-badge v-rec">Recommended</span></div>
+          <div class="option-subtitle">Managed PostgreSQL + Auth + Storage + Realtime in one project</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>Auth, Storage, and DB are one integrated project — single dashboard, single billing</li>
+          <li>Row Level Security (RLS) lets you enforce access control at the DB layer — your role model maps directly</li>
+          <li>Supabase Auth gives you phone OTP + Google + Apple with native SDK that works on React Native too</li>
+          <li>Free tier: 500MB DB, 1GB storage, 50,000 MAU auth — plenty for Phase 1</li>
+          <li>Singapore region available (low latency from Nepal)</li>
+          <li>pg_cron extension available for scheduled interest jobs</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>Pausing on free tier after 1 week of inactivity (non-issue on paid)</li>
+          <li>Prisma + Supabase requires using the direct connection string, not the pooler, for migrations</li>
+        </ul></div>
+      </div>
+      <div class="option-reason">✓ Chosen. Supabase consolidates 3 services (Auth, DB, Storage) that you'd otherwise wire together separately. The RLS feature is genuinely powerful for a financial app with strict access tiers.</div>
+    </div>
+
+    <div class="option-card">
+      <div class="option-header">
+        <div class="option-icon">🚂</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Railway <span class="verdict-badge v-alt">Alternative</span></div>
+          <div class="option-subtitle">Managed Postgres, simpler than Supabase</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul>
+          <li>Simpler — just a Postgres instance, no opinionated SDK</li>
+          <li>Persistent connections, no pausing</li>
+          <li>Good for if you want full control</li>
+        </ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>No built-in Auth, Storage, or Realtime — you'd integrate those separately</li>
+          <li>More setup work</li>
+        </ul></div>
+      </div>
+      <div class="option-reason" style="font-style:italic; color:var(--text-muted);">Good option if you want to use Firebase Auth separately and just need a Postgres host. More work to set up than Supabase all-in-one.</div>
+    </div>
+
+    <div class="option-card avoid">
+      <div class="option-header">
+        <div class="option-icon">🚫</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Firebase Firestore as primary DB <span class="verdict-badge v-no">Avoid</span></div>
+          <div class="option-subtitle">NoSQL document database</div>
+        </div>
+      </div>
+      <div class="option-body">
+        <div class="pro-con pros"><h4>For</h4><ul><li>Great phone OTP auth</li><li>Realtime out of the box</li></ul></div>
+        <div class="pro-con cons"><h4>Against</h4><ul>
+          <li>No ACID transactions spanning multiple collections — fatal for a financial ledger</li>
+          <li>Your relational schema doesn't map to documents cleanly</li>
+          <li>Reporting queries (SUM, GROUP BY) are painful or impossible</li>
+        </ul></div>
+      </div>
+      <div class="option-reason" style="font-style:italic; color:var(--red);">Hard no for the database. Firebase Auth is fine, but Firestore cannot replace PostgreSQL for financial data. The atomic transaction requirement alone rules it out.</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- AUTH -->
+<div class="section" id="auth">
+  <h2>Auth Provider</h2>
+  <p class="section-intro">Continuing from the previous discussion — now with Supabase in the picture.</p>
+
+  <div class="callout callout-green">
+    <div class="callout-icon">✓</div>
+    <div><strong>Use Supabase Auth</strong> — since you're already on Supabase for your database, adding a separate auth provider (Clerk, Firebase Auth) creates unnecessary integration work. Supabase Auth handles phone OTP, Google, and Apple OAuth natively, and its JWTs are automatically trusted by your Supabase RLS policies.</div>
+  </div>
+
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-top:16px;">
+    <table class="cmp-table">
+      <thead><tr><th>Feature</th><th>Supabase Auth</th><th>Clerk</th><th>Firebase Auth</th></tr></thead>
+      <tbody>
+        <tr><td>Phone OTP</td><td class="tick">✓ via Twilio</td><td class="tick">✓ built-in</td><td class="tick">✓ best-in-class</td></tr>
+        <tr><td>Google OAuth</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+        <tr><td>Apple OAuth</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+        <tr><td>React Native SDK</td><td class="tick">✓</td><td class="tick">✓</td><td class="tick">✓</td></tr>
+        <tr><td>DB RLS integration</td><td class="tick">✓ native</td><td class="neutral">manual</td><td class="neutral">manual</td></tr>
+        <tr><td>Separate billing</td><td class="tick">no (same project)</td><td class="cross">yes ($25+/mo)</td><td class="tick">no (Firebase)</td></tr>
+        <tr><td>Pre-built UI components</td><td class="neutral">basic</td><td class="tick">full</td><td class="cross">none</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout callout-amber" style="margin-top:16px;">
+    <div class="callout-icon">⚠️</div>
+    <div><strong>One important note on Supabase Auth + Phone OTP</strong> — you need to connect your own Twilio account for phone OTP in production. Supabase provides a test OTP in development. Twilio pricing in Nepal is ~$0.05/SMS — not a concern at SACCO scale.</div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- API LAYER -->
+<div class="section" id="api">
+  <h2>API Layer Design</h2>
+  <p class="section-intro">How the frontend talks to the backend, and why type safety matters in a financial app.</p>
+
+  <div class="option-card recommended" style="margin-bottom:16px;">
+    <div class="option-header">
+      <div class="option-icon">🔒</div>
+      <div class="option-title-wrap">
+        <div class="option-title">tRPC <span class="verdict-badge v-rec">Recommended</span></div>
+        <div class="option-subtitle">End-to-end type safety — no REST, no GraphQL</div>
+      </div>
+    </div>
+    <div class="option-body">
+      <div class="pro-con pros"><h4>Why tRPC for a financial app</h4><ul>
+        <li>A deposit endpoint that accepts a wrong type fails at compile time, not at runtime</li>
+        <li>Shared Zod input schemas — same validation on frontend form AND backend handler</li>
+        <li>Auto-generated TypeScript types from your router — no OpenAPI, no codegen steps</li>
+        <li>Procedure-level auth middleware — attach role check to every sensitive route declaratively</li>
+        <li>Works with TanStack Query natively — mutations and queries just work</li>
+      </ul></div>
+      <div class="pro-con cons"><h4>Tradeoff</h4><ul>
+        <li>Not a public REST API — Phase 3 native apps must use the tRPC client too (they will, via the shared API package)</li>
+        <li>Third-party integrations (e.g. payment gateway webhooks) need plain Route Handlers alongside tRPC — fine</li>
+      </ul></div>
+    </div>
+    <div class="option-reason">✓ The type safety dividend compounds. Every time you change a DB field, TypeScript immediately shows you every callsite that breaks. In a financial app, this is worth a lot.</div>
+  </div>
+
+  <pre><span class="c">// server/routers/savings.ts — example tRPC router</span>
+<span class="k">export const</span> savingsRouter = router({
+  deposit: protectedProcedure
+    .input(z.object({
+      accountId: z.string().uuid(),
+      amount:    z.number().positive(),
+      note:      z.string().optional(),
+    }))
+    .mutation(<span class="k">async</span> ({ ctx, input }) => {
+      <span class="c">// ctx.user.role is typed — guaranteed EMPLOYEE or ADMIN</span>
+      <span class="k">return await</span> prisma.$transaction(<span class="k">async</span> (tx) => {
+        <span class="k">const</span> account = <span class="k">await</span> tx.savingsAccount.findUniqueOrThrow(...)
+        <span class="k">await</span> tx.savingsTransaction.create({ ... })
+        <span class="k">await</span> tx.savingsAccount.update({ balance: account.balance + input.amount })
+      })
+    }),
+})</pre>
+
+  <pre><span class="c">// client — fully typed, no manual API calls</span>
+<span class="k">const</span> deposit = trpc.savings.deposit.useMutation()
+deposit.mutate({ accountId: <span class="s">'...'</span>, amount: <span class="t">5000</span> })
+<span class="c">// TypeScript knows the exact input shape and return type</span></pre>
+</div>
+
+<hr class="divider"/>
+
+<!-- STATE -->
+<div class="section" id="state">
+  <h2>State Management</h2>
+  <p class="section-intro">Two different concerns — server data and UI state — handled by two small libraries.</p>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">🔄</div>
+        <div class="option-title-wrap">
+          <div class="option-title">TanStack Query <span class="verdict-badge v-rec">Server State</span></div>
+          <div class="option-subtitle">Async data fetching, caching, refetch</div>
+        </div>
+      </div>
+      <div class="option-body" style="grid-template-columns:1fr;">
+        <div class="pro-con pros"><h4>Why</h4><ul>
+          <li>Handles loading / error / stale states automatically</li>
+          <li>Optimistic updates for deposit/payment flows</li>
+          <li>Cache invalidation — after a deposit, auto-refetch the account balance</li>
+          <li>Carries over to React Native with the same API</li>
+          <li>tRPC uses it internally — you get it for free</li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">🐻</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Zustand <span class="verdict-badge v-rec">UI State</span></div>
+          <div class="option-subtitle">Modal state, sidebar, session context</div>
+        </div>
+      </div>
+      <div class="option-body" style="grid-template-columns:1fr;">
+        <div class="pro-con pros"><h4>Why</h4><ul>
+          <li>200-line library — no boilerplate, no providers, no reducers</li>
+          <li>Used for: open drawer state, active member context, confirmation modals</li>
+          <li>Works the same in React Native</li>
+          <li>Don't use it for server data — that's TanStack Query's job</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-amber" style="margin-top:12px;">
+    <div class="callout-icon">🚫</div>
+    <div><strong>Don't use Redux.</strong> TanStack Query replaces most of what Redux was used for (server data). Zustand handles the rest. Redux is overkill here and adds 3x the boilerplate for no benefit.</div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- NATIVE -->
+<div class="section" id="native">
+  <h2>Phase 3 — Native Apps</h2>
+  <p class="section-intro">The strategy that makes this stack decision matter long-term.</p>
+
+  <div class="option-card recommended">
+    <div class="option-header">
+      <div class="option-icon">📱</div>
+      <div class="option-title-wrap">
+        <div class="option-title">Expo (React Native) <span class="verdict-badge v-rec">Recommended</span></div>
+        <div class="option-subtitle">One codebase → Android + iOS</div>
+      </div>
+    </div>
+    <div class="option-body">
+      <div class="pro-con pros"><h4>For</h4><ul>
+        <li>React — same component model as your Next.js app</li>
+        <li>tRPC client package is shared verbatim with the web app</li>
+        <li>TanStack Query, Zustand, Zod — all work unchanged</li>
+        <li>Supabase Auth SDK has an Expo-specific package</li>
+        <li>Expo EAS Build publishes to Play Store and App Store</li>
+        <li>You can share a <code>/packages/api</code> folder between Next.js and Expo in a monorepo</li>
+      </ul></div>
+      <div class="pro-con cons"><h4>Against</h4><ul>
+        <li>UI components don't transfer — you rewrite screens in React Native primitives (but logic transfers)</li>
+        <li>Native modules (biometrics, camera) need Expo SDK</li>
+      </ul></div>
+    </div>
+    <div class="option-reason">✓ 60–70% of your business logic (API calls, validation, state management) transfers without changes. You rewrite only the UI layer.</div>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top:16px;">
+    <div class="callout-icon">🏗️</div>
+    <div><strong>Monorepo structure for Phase 3</strong> — use Turborepo with <code>apps/web</code> (Next.js), <code>apps/mobile</code> (Expo), and <code>packages/api</code> (tRPC client + Zod schemas). Set this up from day one — it costs nothing and makes Phase 3 trivial.</div>
+  </div>
+
+  <pre><span class="c"># Turborepo monorepo layout</span>
+apps/
+  web/          <span class="c"># Next.js PWA</span>
+  mobile/       <span class="c"># Expo app (Phase 3)</span>
+packages/
+  api/          <span class="c"># tRPC router types + Zod schemas (shared)</span>
+  db/           <span class="c"># Prisma schema + client (server-only)</span>
+  ui/           <span class="c"># Shared non-visual logic, utils</span></pre>
+</div>
+
+<hr class="divider"/>
+
+<!-- DEPLOYMENT -->
+<div class="section" id="deploy">
+  <h2>Deployment</h2>
+  <p class="section-intro">Simple, proven, cheap at SACCO scale.</p>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">▲</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Vercel <span class="verdict-badge v-rec">Frontend + API</span></div>
+        </div>
+      </div>
+      <div class="option-body" style="grid-template-columns:1fr;">
+        <div class="pro-con pros"><h4>Why</h4><ul>
+          <li>Next.js is made by Vercel — zero config deploy</li>
+          <li>Edge network includes Singapore (ap-southeast-1)</li>
+          <li>Preview deployments per branch — test before merging</li>
+          <li>Free tier handles Phase 1 easily. Pro is $20/mo.</li>
+          <li>Environment variables, cron triggers, log drains — all built in</li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="option-card recommended">
+      <div class="option-header">
+        <div class="option-icon">🟢</div>
+        <div class="option-title-wrap">
+          <div class="option-title">Supabase <span class="verdict-badge v-rec">DB + Auth + Storage</span></div>
+        </div>
+      </div>
+      <div class="option-body" style="grid-template-columns:1fr;">
+        <div class="pro-con pros"><h4>Why</h4><ul>
+          <li>Already decided above. Handles DB, Auth, Storage.</li>
+          <li>Free: 500MB DB. Paid: $25/mo for 8GB + no pausing</li>
+          <li>Daily backups on paid. Point-in-time recovery on Pro.</li>
+          <li>Singapore region</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-amber" style="margin-top:12px;">
+    <div class="callout-icon">💡</div>
+    <div><strong>When to upgrade from Supabase free tier:</strong> Once you go live with real member data, move to Supabase Pro ($25/mo). The free tier pauses after 1 week of inactivity — fine for development, not for production.</div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- TOOLING -->
+<div class="section" id="tooling">
+  <h2>Essential Tooling</h2>
+  <p class="section-intro">Non-negotiable additions that keep the codebase healthy.</p>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+    <table class="cmp-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Why it matters here</th></tr></thead>
+      <tbody>
+        <tr><td>TypeScript (strict)</td><td>Type safety</td><td>Catch wrong types on financial inputs at compile time. Mandatory.</td></tr>
+        <tr><td>Prisma</td><td>ORM + migrations</td><td>Type-safe queries. Schema as code. <code>prisma migrate</code> tracks all DB changes.</td></tr>
+        <tr><td>Zod</td><td>Runtime validation</td><td>Validate all API inputs. Shared between tRPC and frontend forms.</td></tr>
+        <tr><td>ESLint + Prettier</td><td>Code quality</td><td>Consistent style, catch obvious bugs. Run in CI.</td></tr>
+        <tr><td>Vitest</td><td>Unit tests</td><td>Test financial calculation functions (EMI, interest, balance). Critical.</td></tr>
+        <tr><td>Playwright</td><td>E2E tests</td><td>Test the full deposit / loan payment flow in a headless browser.</td></tr>
+        <tr><td>Sentry</td><td>Error monitoring</td><td>Free tier. Know when a payment mutation fails in production before a member calls.</td></tr>
+        <tr><td>Turborepo</td><td>Monorepo tooling</td><td>Set up from day one for the web + mobile + shared packages structure.</td></tr>
+        <tr><td>shadcn/ui</td><td>UI components</td><td>Copy-paste accessible components you own. Tables, dialogs, forms — all needed for the admin dashboard.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- PHASES -->
+<div class="section" id="phases">
+  <h2>What You Build, Phase by Phase</h2>
+  <div class="phase-strip">
+    <div class="phase-box">
+      <div class="num">Phase 01 — Now</div>
+      <h4>Employee PWA</h4>
+      <ul>
+        <li>Next.js + Tailwind + shadcn</li>
+        <li>Supabase DB + Auth + Storage</li>
+        <li>tRPC API layer</li>
+        <li>Prisma ORM + migrations</li>
+        <li>Employee dashboard (all CRUD)</li>
+        <li>PWA manifest + service worker</li>
+        <li>Vercel deploy (Singapore)</li>
+      </ul>
+    </div>
+    <div class="phase-box">
+      <div class="num">Phase 02 — Member Portal</div>
+      <h4>Self-Service Web</h4>
+      <ul>
+        <li>Member auth flow (same Supabase)</li>
+        <li>Member dashboard (read-only)</li>
+        <li>Supabase RLS enforces data isolation</li>
+        <li>Push notifications via Supabase Realtime</li>
+        <li>Member-initiated deposits (eSewa/Khalti webhook → Route Handler)</li>
+        <li>PDF statement generation</li>
+      </ul>
+    </div>
+    <div class="phase-box">
+      <div class="num">Phase 03 — Native Apps</div>
+      <h4>Android + iOS</h4>
+      <ul>
+        <li>Expo app in <code>apps/mobile</code></li>
+        <li>Import shared <code>packages/api</code></li>
+        <li>Supabase Auth Expo SDK</li>
+        <li>Biometric login</li>
+        <li>Camera for document upload</li>
+        <li>Expo EAS Build → stores</li>
+        <li>Zero backend changes needed</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:56px; padding-top:28px; border-top:2px solid var(--ink); display:flex; gap:40px; flex-wrap:wrap; align-items:flex-start;">
+  <div>
+    <div style="font-family:'Geist Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Total Phase 1 Cost</div>
+    <div style="font-size:22px; font-family:'Instrument Serif',serif; color:var(--ink);">$0 / month</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Vercel free + Supabase free until production go-live</div>
+  </div>
+  <div>
+    <div style="font-family:'Geist Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Production Cost (Phase 1)</div>
+    <div style="font-size:22px; font-family:'Instrument Serif',serif; color:var(--ink);">~$45 / month</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Vercel Pro $20 + Supabase Pro $25</div>
+  </div>
+  <div>
+    <div style="font-family:'Geist Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Languages</div>
+    <div style="font-size:22px; font-family:'Instrument Serif',serif; color:var(--ink);">1</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">TypeScript, end to end, all phases</div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const sections = document.querySelectorAll('[id]');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting)
+      navItems.forEach(n => n.classList.toggle('active', n.getAttribute('href') === '#' + e.target.id));
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

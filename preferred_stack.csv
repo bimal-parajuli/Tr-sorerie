@@ -1,0 +1,22 @@
+﻿Purpose,Recommended Tool(s),Notes / Why
+Frontend Framework,Next.js 15,PWA + SSR + API in one; React base for future React Native
+Styling / UI,Tailwind CSS + shadcn/ui,Fast UI development with customizable components
+Backend Layer,Next.js Route Handlers + tRPC,Monorepo API with full type safety
+API Layer,tRPC,"End-to-end typed API, no REST/GraphQL overhead"
+Database ORM,Prisma,Type-safe queries + migrations
+Database Hosting,Supabase (PostgreSQL),Managed Postgres + RLS + storage + auth
+Authentication,Supabase Auth,Built-in OTP + OAuth + RLS integration
+Server State Management,TanStack Query,"Caching, syncing, optimistic updates"
+Client/UI State,Zustand,"Lightweight UI state (modals, drawers, etc.)"
+Validation,Zod,Shared schemas (frontend + backend)
+PWA Support,@ducanh2912/next-pwa,Service worker + offline support
+File Storage,Supabase Storage,"Handles documents, images, receipts"
+Native App Framework (Phase 3),Expo,Shared logic with web; builds Android/iOS
+Deployment (Frontend/API),Vercel,Optimized for Next.js; global edge (Singapore)
+Deployment (Backend services),Supabase,"Hosts DB, auth, storage"
+Monorepo Tooling,Turborepo,Shared code across web + mobile
+Code Quality,ESLint + Prettier,Consistency + bug prevention
+Unit Testing,Vitest,"Test financial logic (interest, EMI, etc.)"
+E2E Testing,Playwright,"Test full flows (deposit, payments)"
+Error Monitoring,Sentry,Track production issues
+Language,TypeScript,End-to-end type safety
