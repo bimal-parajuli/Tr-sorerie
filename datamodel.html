@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SACCO — Data Model Design</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161d;
+    --bg3: #1a1e28;
+    --border: #252a38;
+    --border-light: #2e3548;
+    --text: #e8eaf0;
+    --text-muted: #6b748a;
+    --text-dim: #9aa0b4;
+    --accent: #4f9cf9;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #f59e0b;
+    --accent5: #f87171;
+    --accent6: #60a5fa;
+    --tag-bg: #1e2535;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── LAYOUT ── */
+  .sidebar {
+    position: fixed; top: 0; left: 0;
+    width: 240px; height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    overflow-y: auto;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 0 24px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo .brand {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+  .nav-section {
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .nav-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--text-muted);
+    padding: 8px 12px 4px;
+  }
+  .nav-item {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 6px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: rgba(79,156,249,0.12); color: var(--accent); }
+
+  .main {
+    margin-left: 240px;
+    padding: 0 48px 80px;
+    max-width: calc(100vw - 240px);
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    padding: 56px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 56px;
+    position: relative;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0;
+    width: 80px; height: 2px;
+    background: var(--accent);
+  }
+  .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  h1 em { color: var(--accent); font-style: italic; }
+  .header-meta {
+    display: flex; gap: 24px;
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 20px;
+  }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 72px; }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .section-desc {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    font-size: 13.5px;
+    max-width: 640px;
+    line-height: 1.65;
+  }
+  h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+
+  /* ── ENTITY CARDS ── */
+  .entity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .entity-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .entity-card:hover { border-color: var(--border-light); }
+  .entity-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .entity-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .entity-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .entity-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .entity-body { padding: 16px 20px; }
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    gap: 12px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .field-name.pk { color: var(--accent4); }
+  .field-name.fk { color: var(--accent2); }
+  .field-name.idx { color: var(--accent3); }
+  .field-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+  .field-note {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    display: block;
+    margin-top: 1px;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+  }
+  .tag-pk { background: rgba(245,158,11,0.12); color: var(--accent4); }
+  .tag-fk { background: rgba(167,139,250,0.12); color: var(--accent2); }
+  .tag-idx { background: rgba(52,211,153,0.12); color: var(--accent3); }
+  .tag-json { background: rgba(96,165,250,0.12); color: var(--accent6); }
+  .tag-computed { background: rgba(248,113,113,0.12); color: var(--accent5); }
+  .tag-unique { background: rgba(79,156,249,0.12); color: var(--accent); }
+
+  /* ── SCHEMA BLOCKS ── */
+  .schema-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .schema-block-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .schema-table-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .schema-table-name span { color: var(--text-muted); font-weight: 300; }
+  .schema-body {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  thead tr {
+    background: var(--bg3);
+  }
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    font-weight: 400;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.035);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.015); }
+  .col-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .col-name.is-pk { color: var(--accent4); }
+  .col-name.is-fk { color: var(--accent2); }
+  .col-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .col-notes { color: var(--text-dim); font-size: 12px; line-height: 1.5; }
+  .inline-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 9.5px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+  .i-pk { background: rgba(245,158,11,0.15); color: var(--accent4); }
+  .i-fk { background: rgba(167,139,250,0.15); color: var(--accent2); }
+  .i-idx { background: rgba(52,211,153,0.15); color: var(--accent3); }
+  .i-den { background: rgba(248,113,113,0.15); color: var(--accent5); }
+  .i-unique { background: rgba(79,156,249,0.15); color: var(--accent); }
+  .i-enum { background: rgba(96,165,250,0.12); color: var(--accent6); }
+  .i-json { background: rgba(167,139,250,0.1); color: #c4b5fd; }
+
+  /* ── ACCESS MATRIX ── */
+  .matrix-wrap { overflow-x: auto; }
+  .matrix-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px;
+  }
+  .matrix-table th {
+    padding: 10px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .matrix-table td {
+    padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.035);
+    border-right: 1px solid rgba(255,255,255,0.035);
+    text-align: center;
+  }
+  .matrix-table td.resource-col {
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg2);
+    white-space: nowrap;
+  }
+  .matrix-table tr:hover td { background: rgba(255,255,255,0.015); }
+  .matrix-table tr:hover td.resource-col { background: var(--bg2); }
+  .check { color: var(--accent3); font-size: 15px; }
+  .dash { color: var(--border-light); }
+  .partial { color: var(--accent4); font-size: 13px; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    display: flex; gap: 14px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border-left: 3px solid;
+  }
+  .callout-info { background: rgba(79,156,249,0.07); border-color: var(--accent); }
+  .callout-warn { background: rgba(245,158,11,0.07); border-color: var(--accent4); }
+  .callout-success { background: rgba(52,211,153,0.07); border-color: var(--accent3); }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .callout-text { font-size: 13px; color: var(--text-dim); line-height: 1.65; }
+  .callout-text strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 13px; }
+
+  /* ── PHASE CARDS ── */
+  .phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .phase-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .phase-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .phase-card h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .phase-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .phase-card ul li {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .phase-card ul li::before {
+    content: '—';
+    color: var(--text-muted);
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    margin-top: 2px;
+  }
+  .phase-card ul li:last-child { border-bottom: none; }
+
+  /* ── INDEX TABLE ── */
+  .idx-table { font-size: 12.5px; width: 100%; border-collapse: collapse; }
+  .idx-table td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .idx-table tr:last-child td { border-bottom: none; }
+  .idx-table td:first-child { 
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent3);
+    white-space: nowrap;
+    width: 220px;
+  }
+  .idx-table td:nth-child(2) {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    width: 200px;
+  }
+  .idx-table td:nth-child(3) { color: var(--text-dim); }
+
+  /* ── DIAGRAM ── */
+  .erd-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    overflow-x: auto;
+  }
+
+  /* ── TYPOGRAPHY HELPERS ── */
+  p { color: var(--text-dim); font-size: 13.5px; line-height: 1.7; margin-bottom: 12px; }
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+  .text-accent { color: var(--accent); }
+  .text-muted { color: var(--text-muted); }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 20px; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 2px;
+  }
+
+  /* ── SVG ERD ── */
+  .erd-svg { min-width: 900px; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px; }
+    .phase-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR NAV -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">SACCO</div>
+    <div class="sub">Data Model v1.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Design</div>
+    <a class="nav-item active" href="#overview">Overview</a>
+    <a class="nav-item" href="#principles">Principles</a>
+    <a class="nav-item" href="#erd">Entity Diagram</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Schema</div>
+    <a class="nav-item" href="#auth">Auth & Identity</a>
+    <a class="nav-item" href="#members">Members</a>
+    <a class="nav-item" href="#accounts">Savings Accounts</a>
+    <a class="nav-item" href="#loans">Loans</a>
+    <a class="nav-item" href="#expenses">Expenses</a>
+    <a class="nav-item" href="#audit">Audit & Notifications</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Strategy</div>
+    <a class="nav-item" href="#denorm">Denormalization</a>
+    <a class="nav-item" href="#indexes">Indexes</a>
+    <a class="nav-item" href="#access">Access Control</a>
+    <a class="nav-item" href="#phases">Rollout Phases</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- HEADER -->
+  <div class="page-header" id="overview">
+    <div class="eyebrow">Data Model Design — Nepal SACCO</div>
+    <h1>Schema &amp; Architecture<br/><em>Blueprint</em></h1>
+    <p style="max-width: 600px; font-size: 15px; color: var(--text-dim); line-height: 1.7;">
+      A resilient, extensible database design for core SACCO operations — savings, lending, 
+      and expense management — built for progressive feature rollout across PWA and native clients.
+    </p>
+    <div class="header-meta">
+      <span>📦 13 Core Tables</span>
+      <span>🔐 3 Access Tiers</span>
+      <span>🧩 PostgreSQL / Firebase Firestore Compatible</span>
+      <span>📱 PWA → Android → iOS</span>
+    </div>
+  </div>
+
+  <!-- PRINCIPLES -->
+  <div class="section" id="principles">
+    <h2>Design Principles</h2>
+    <p class="section-desc">
+      The schema is built around five non-negotiable properties for a financial system operating 
+      in a trust-sensitive cooperative environment.
+    </p>
+    <div class="entity-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(79,156,249,0.12);">🔁</div>
+          <div>
+            <div class="entity-name">Immutable Ledger</div>
+            <div class="entity-desc">Transactions are never deleted, only reversed</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">Every financial movement (deposit, payment, interest) creates a permanent record with a <code>balance_before</code> and <code>balance_after</code> snapshot. Corrections are done via reversal transactions, never edits.</p>
+        </div>
+      </div>
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(245,158,11,0.12);">⚡</div>
+          <div>
+            <div class="entity-name">Strategic Denormalization</div>
+            <div class="entity-desc">Running balances cached for instant reads</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">Account balances, outstanding loan principal, and total paid amounts are stored as computed-and-cached fields, updated atomically via transactions. No expensive SUM() queries on hot paths.</p>
+        </div>
+      </div>
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(52,211,153,0.12);">🧱</div>
+          <div>
+            <div class="entity-name">Atomic Operations</div>
+            <div class="entity-desc">DB transactions wrap every mutation</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">A deposit must simultaneously create a <code>savings_transaction</code> row AND update <code>savings_accounts.balance</code>. Both succeed or both fail — no partial states.</p>
+        </div>
+      </div>
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(167,139,250,0.12);">🏗️</div>
+          <div>
+            <div class="entity-name">Soft Deletes</div>
+            <div class="entity-desc">Status fields replace hard deletion</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">Users, loans, accounts are never hard-deleted. Status enums (<code>ACTIVE / CLOSED / SUSPENDED</code>) control visibility. Historical data is always preserved for audits and reporting.</p>
+        </div>
+      </div>
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(248,113,113,0.12);">📋</div>
+          <div>
+            <div class="entity-name">Full Audit Trail</div>
+            <div class="entity-desc">Every mutation logged with actor &amp; diff</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">A write-only <code>audit_logs</code> table captures who did what, when, and the exact before/after JSON diff. Critical for cooperative governance and dispute resolution.</p>
+        </div>
+      </div>
+      <div class="entity-card">
+        <div class="entity-header">
+          <div class="entity-icon" style="background:rgba(96,165,250,0.12);">🔌</div>
+          <div>
+            <div class="entity-name">Extensible Metadata</div>
+            <div class="entity-desc">JSON columns absorb future flexibility</div>
+          </div>
+        </div>
+        <div class="entity-body">
+          <p style="font-size:12.5px; margin:0;">Key tables carry a <code>metadata JSONB</code> column — a flexible escape hatch for future features (tags, custom fields, channel-specific data) without schema migrations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ERD OVERVIEW -->
+  <div class="section" id="erd">
+    <h2>Entity Relationship Overview</h2>
+    <p class="section-desc">Thirteen tables in four logical domains. Arrows represent foreign key relationships.</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(79,156,249,0.8)"></div>Auth & Identity</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(52,211,153,0.8)"></div>Savings</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(245,158,11,0.8)"></div>Lending</div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(248,113,113,0.8)"></div>Operations</div>
+    </div>
+    <div class="erd-wrap">
+      <svg class="erd-svg" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto;">
+        <defs>
+          <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 z" fill="#3a4260"/>
+          </marker>
+          <marker id="arr-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 z" fill="#4f9cf9"/>
+          </marker>
+        </defs>
+
+        <!-- USERS -->
+        <rect x="20" y="20" width="180" height="130" rx="8" fill="#13161d" stroke="#4f9cf9" stroke-width="1.5"/>
+        <rect x="20" y="20" width="180" height="32" rx="8" fill="rgba(79,156,249,0.18)"/>
+        <rect x="20" y="44" width="180" height="8" fill="rgba(79,156,249,0.18)"/>
+        <text x="110" y="42" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#4f9cf9" font-weight="500">users</text>
+        <text x="32" y="72" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="32" y="89" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">phone_number</text>
+        <text x="32" y="106" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">role (MEMBER|EMPLOYEE|ADMIN)</text>
+        <text x="32" y="123" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">auth_providers[]</text>
+        <text x="32" y="140" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">is_active</text>
+
+        <!-- MEMBER PROFILES -->
+        <rect x="240" y="20" width="190" height="160" rx="8" fill="#13161d" stroke="#4f9cf9" stroke-width="1.5"/>
+        <rect x="240" y="20" width="190" height="32" rx="8" fill="rgba(79,156,249,0.18)"/>
+        <rect x="240" y="44" width="190" height="8" fill="rgba(79,156,249,0.18)"/>
+        <text x="335" y="42" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#4f9cf9" font-weight="500">member_profiles</text>
+        <text x="252" y="72" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="252" y="89" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ user_id</text>
+        <text x="252" y="106" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">member_code</text>
+        <text x="252" y="123" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">full_name, dob, gender</text>
+        <text x="252" y="140" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">address, id_documents</text>
+        <text x="252" y="157" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">membership_status</text>
+
+        <!-- SAVINGS ACCOUNTS -->
+        <rect x="20" y="220" width="190" height="150" rx="8" fill="#13161d" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="20" y="220" width="190" height="32" rx="8" fill="rgba(52,211,153,0.15)"/>
+        <rect x="20" y="244" width="190" height="8" fill="rgba(52,211,153,0.15)"/>
+        <text x="115" y="242" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#34d399" font-weight="500">savings_accounts</text>
+        <text x="32" y="270" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="32" y="287" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ member_id</text>
+        <text x="32" y="304" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">account_number</text>
+        <text x="32" y="321" font-family="DM Mono" font-size="9.5" fill="#f87171">◈ balance (cached)</text>
+        <text x="32" y="338" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">interest_rate, status</text>
+        <text x="32" y="355" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">account_type</text>
+
+        <!-- SAVINGS TRANSACTIONS -->
+        <rect x="240" y="220" width="195" height="185" rx="8" fill="#13161d" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="240" y="220" width="195" height="32" rx="8" fill="rgba(52,211,153,0.15)"/>
+        <rect x="240" y="244" width="195" height="8" fill="rgba(52,211,153,0.15)"/>
+        <text x="337" y="242" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#34d399" font-weight="500">savings_transactions</text>
+        <text x="252" y="270" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="252" y="287" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ account_id</text>
+        <text x="252" y="304" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">type (DEPOSIT|WITHDRAW|INTEREST)</text>
+        <text x="252" y="321" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">amount</text>
+        <text x="252" y="338" font-family="DM Mono" font-size="9.5" fill="#f87171">◈ balance_before / after</text>
+        <text x="252" y="355" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ performed_by</text>
+        <text x="252" y="372" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">reference_number, status</text>
+        <text x="252" y="389" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">reversal_of (self-ref)</text>
+
+        <!-- LOAN APPLICATIONS -->
+        <rect x="470" y="20" width="200" height="185" rx="8" fill="#13161d" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="470" y="20" width="200" height="32" rx="8" fill="rgba(245,158,11,0.15)"/>
+        <rect x="470" y="44" width="200" height="8" fill="rgba(245,158,11,0.15)"/>
+        <text x="570" y="42" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f59e0b" font-weight="500">loan_applications</text>
+        <text x="482" y="70" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="482" y="87" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ member_id</text>
+        <text x="482" y="104" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">application_number</text>
+        <text x="482" y="121" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">loan_type, purpose</text>
+        <text x="482" y="138" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">requested_amount, tenure</text>
+        <text x="482" y="155" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">status (DRAFT→DISBURSED)</text>
+        <text x="482" y="172" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ reviewed_by</text>
+        <text x="482" y="189" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">approved_amount</text>
+
+        <!-- LOANS -->
+        <rect x="700" y="20" width="200" height="200" rx="8" fill="#13161d" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="700" y="20" width="200" height="32" rx="8" fill="rgba(245,158,11,0.15)"/>
+        <rect x="700" y="44" width="200" height="8" fill="rgba(245,158,11,0.15)"/>
+        <text x="800" y="42" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f59e0b" font-weight="500">loans</text>
+        <text x="712" y="70" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="712" y="87" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ application_id</text>
+        <text x="712" y="104" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ member_id</text>
+        <text x="712" y="121" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">principal, interest_rate</text>
+        <text x="712" y="138" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">tenure_months, emi_amount</text>
+        <text x="712" y="155" font-family="DM Mono" font-size="9.5" fill="#f87171">◈ outstanding_principal</text>
+        <text x="712" y="172" font-family="DM Mono" font-size="9.5" fill="#f87171">◈ total_paid_principal</text>
+        <text x="712" y="189" font-family="DM Mono" font-size="9.5" fill="#f87171">◈ total_paid_interest</text>
+        <text x="712" y="206" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">status, disbursed_at</text>
+
+        <!-- EMI SCHEDULE -->
+        <rect x="700" y="260" width="200" height="160" rx="8" fill="#13161d" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="700" y="260" width="200" height="32" rx="8" fill="rgba(245,158,11,0.15)"/>
+        <rect x="700" y="284" width="200" height="8" fill="rgba(245,158,11,0.15)"/>
+        <text x="800" y="282" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f59e0b" font-weight="500">loan_emi_schedule</text>
+        <text x="712" y="310" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="712" y="327" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ loan_id</text>
+        <text x="712" y="344" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">installment_number, due_date</text>
+        <text x="712" y="361" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">principal + interest component</text>
+        <text x="712" y="378" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">emi_amount, opening_balance</text>
+        <text x="712" y="395" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">status (PENDING|PAID|OVERDUE)</text>
+
+        <!-- LOAN PAYMENTS -->
+        <rect x="470" y="260" width="200" height="175" rx="8" fill="#13161d" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="470" y="260" width="200" height="32" rx="8" fill="rgba(245,158,11,0.15)"/>
+        <rect x="470" y="284" width="200" height="8" fill="rgba(245,158,11,0.15)"/>
+        <text x="570" y="282" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f59e0b" font-weight="500">loan_payments</text>
+        <text x="482" y="310" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="482" y="327" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ loan_id</text>
+        <text x="482" y="344" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">amount_paid</text>
+        <text x="482" y="361" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">principal_paid, interest_paid</text>
+        <text x="482" y="378" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">payment_date, mode</text>
+        <text x="482" y="395" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ received_by</text>
+        <text x="482" y="412" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">penalty_paid, emi_ids[]</text>
+
+        <!-- EXPENSES -->
+        <rect x="20" y="460" width="190" height="145" rx="8" fill="#13161d" stroke="#f87171" stroke-width="1.5"/>
+        <rect x="20" y="460" width="190" height="32" rx="8" fill="rgba(248,113,113,0.15)"/>
+        <rect x="20" y="484" width="190" height="8" fill="rgba(248,113,113,0.15)"/>
+        <text x="115" y="482" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f87171" font-weight="500">expenses</text>
+        <text x="32" y="510" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="32" y="527" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">category, description</text>
+        <text x="32" y="544" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">amount, expense_date</text>
+        <text x="32" y="561" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ recorded_by, approved_by</text>
+        <text x="32" y="578" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">status (DRAFT|APPROVED|PAID)</text>
+
+        <!-- AUDIT LOGS -->
+        <rect x="240" y="460" width="190" height="145" rx="8" fill="#13161d" stroke="#f87171" stroke-width="1.5"/>
+        <rect x="240" y="460" width="190" height="32" rx="8" fill="rgba(248,113,113,0.15)"/>
+        <rect x="240" y="484" width="190" height="8" fill="rgba(248,113,113,0.15)"/>
+        <text x="335" y="482" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f87171" font-weight="500">audit_logs</text>
+        <text x="252" y="510" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="252" y="527" font-family="DM Mono" font-size="9.5" fill="#a78bfa">↗ actor_id</text>
+        <text x="252" y="544" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">action, entity_type</text>
+        <text x="252" y="561" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">old_values, new_values (JSON)</text>
+        <text x="252" y="578" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">ip_address, created_at</text>
+
+        <!-- INTEREST RATES -->
+        <rect x="470" y="470" width="180" height="125" rx="8" fill="#13161d" stroke="#f87171" stroke-width="1.5"/>
+        <rect x="470" y="470" width="180" height="32" rx="8" fill="rgba(248,113,113,0.15)"/>
+        <rect x="470" y="494" width="180" height="8" fill="rgba(248,113,113,0.15)"/>
+        <text x="560" y="492" text-anchor="middle" font-family="DM Mono" font-size="11" fill="#f87171" font-weight="500">interest_rate_config</text>
+        <text x="482" y="518" font-family="DM Mono" font-size="9.5" fill="#f59e0b">🔑 id</text>
+        <text x="482" y="535" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">account_type / loan_type</text>
+        <text x="482" y="552" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">rate, effective_from</text>
+        <text x="482" y="569" font-family="DM Mono" font-size="9.5" fill="#9aa0b4">effective_to (nullable)</text>
+
+        <!-- RELATIONSHIP LINES -->
+        <!-- users → member_profiles -->
+        <line x1="200" y1="80" x2="240" y2="80" stroke="#4f9cf9" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-blue)" opacity="0.6"/>
+        <!-- member_profiles → savings_accounts -->
+        <line x1="335" y1="180" x2="115" y2="220" stroke="#34d399" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+        <!-- savings_accounts → savings_transactions -->
+        <line x1="210" y1="290" x2="240" y2="290" stroke="#34d399" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+        <!-- member_profiles → loan_applications -->
+        <line x1="430" y1="80" x2="470" y2="80" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+        <!-- loan_applications → loans -->
+        <line x1="670" y1="100" x2="700" y2="100" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+        <!-- loans → emi_schedule -->
+        <line x1="800" y1="220" x2="800" y2="260" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+        <!-- loans → loan_payments -->
+        <line x1="700" y1="340" x2="670" y2="340" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr)" opacity="0.5"/>
+
+        <!-- LEGEND -->
+        <rect x="20" y="590" width="440" height="24" rx="4" fill="rgba(255,255,255,0.02)" stroke="#252a38" stroke-width="0.5"/>
+        <text x="32" y="606" font-family="DM Mono" font-size="9" fill="#f59e0b">🔑 PK</text>
+        <text x="80" y="606" font-family="DM Mono" font-size="9" fill="#a78bfa">↗ FK</text>
+        <text x="116" y="606" font-family="DM Mono" font-size="9" fill="#f87171">◈ Denormalized/Cached</text>
+        <text x="260" y="606" font-family="DM Mono" font-size="9" fill="#34d399">● Index recommended</text>
+      </svg>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SCHEMA: AUTH & IDENTITY -->
+  <div class="section" id="auth">
+    <h2>Auth &amp; Identity</h2>
+    <p class="section-desc">All users share a single <code>users</code> table with a role discriminator. Authentication is decoupled from profile data — supporting multiple auth providers per user, with phone as the mandatory identifier.</p>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">💡</div>
+      <div class="callout-text">
+        <strong>Phone-first identity</strong>
+        Phone number is the canonical unique identifier. Google/Apple OAuth tokens are linked to it but are supplementary. This ensures a member can always recover access via OTP even if they lose access to their OAuth provider.
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">users <span>— core identity &amp; access table</span></div>
+        <span class="inline-tag i-pk">Auth Domain</span>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes">Generated (uuid_generate_v4)</td></tr>
+            <tr><td class="col-name">phone_number</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span> <span class="inline-tag i-idx">IDX</span> NOT NULL</td><td class="col-notes">E.164 format. +977XXXXXXXXXX. Mandatory for all users.</td></tr>
+            <tr><td class="col-name">email</td><td class="col-type">VARCHAR(255)</td><td><span class="inline-tag i-unique">UNIQUE</span> nullable</td><td class="col-notes">Set on Google/Apple OAuth link. Can be null for phone-only users.</td></tr>
+            <tr><td class="col-name">role</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> NOT NULL</td><td class="col-notes">MEMBER | EMPLOYEE | SUPER_ADMIN. Drives all access control.</td></tr>
+            <tr><td class="col-name">auth_providers</td><td class="col-type">TEXT[]</td><td><span class="inline-tag i-json">ARRAY</span></td><td class="col-notes">['phone', 'google', 'apple']. A user may link multiple providers over time.</td></tr>
+            <tr><td class="col-name">google_uid</td><td class="col-type">VARCHAR(128)</td><td>nullable</td><td class="col-notes">Google sub claim. Used to match incoming OAuth tokens.</td></tr>
+            <tr><td class="col-name">apple_uid</td><td class="col-type">VARCHAR(128)</td><td>nullable</td><td class="col-notes">Apple user identifier.</td></tr>
+            <tr><td class="col-name">is_active</td><td class="col-type">BOOLEAN</td><td>DEFAULT true</td><td class="col-notes">False = suspended login without destroying data.</td></tr>
+            <tr><td class="col-name">last_login_at</td><td class="col-type">TIMESTAMPTZ</td><td>nullable</td><td class="col-notes">Updated on every successful auth.</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>NOT NULL DEFAULT now()</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">updated_at</td><td class="col-type">TIMESTAMPTZ</td><td>auto-update</td><td class="col-notes">Trigger-managed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">member_profiles <span>— extended KYC &amp; membership info</span></div>
+        <span class="inline-tag i-pk">Auth Domain</span>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">user_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id <span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">1:1 with users. Not all users have a member profile (employees may not).</td></tr>
+            <tr><td class="col-name">member_code</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span> NOT NULL</td><td class="col-notes">Human-readable ID. e.g. MBR-2025-0042. Auto-generated on registration.</td></tr>
+            <tr><td class="col-name">full_name</td><td class="col-type">VARCHAR(200)</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">date_of_birth</td><td class="col-type">DATE</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">gender</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">MALE | FEMALE | OTHER</td></tr>
+            <tr><td class="col-name">address</td><td class="col-type">JSONB</td><td><span class="inline-tag i-json">JSON</span></td><td class="col-notes">{ street, ward, municipality, district, province }. JSONB for flexible Nepal admin structure.</td></tr>
+            <tr><td class="col-name">id_type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">CITIZENSHIP | PASSPORT | VOTER_ID | DRIVING_LICENSE</td></tr>
+            <tr><td class="col-name">id_number</td><td class="col-type">VARCHAR(50)</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">id_document_urls</td><td class="col-type">TEXT[]</td><td></td><td class="col-notes">Array of storage URLs (front, back).</td></tr>
+            <tr><td class="col-name">photo_url</td><td class="col-type">TEXT</td><td>nullable</td><td class="col-notes">Member passport photo.</td></tr>
+            <tr><td class="col-name">nominee_name</td><td class="col-type">VARCHAR(200)</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">nominee_relation</td><td class="col-type">VARCHAR(50)</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">membership_status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">ACTIVE | SUSPENDED | CLOSED</td></tr>
+            <tr><td class="col-name is-fk">created_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes">Employee who registered the member.</td></tr>
+            <tr><td class="col-name">joined_at</td><td class="col-type">DATE</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">metadata</td><td class="col-type">JSONB</td><td><span class="inline-tag i-json">JSON</span></td><td class="col-notes">Extensibility hook. Custom fields per SACCO without schema migration.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SCHEMA: SAVINGS -->
+  <div class="section" id="accounts">
+    <h2>Savings Accounts &amp; Transactions</h2>
+    <p class="section-desc">The double-entry savings ledger. Every monetary change is an immutable transaction row; the account balance is a cached aggregate that must stay in sync via atomic DB transactions.</p>
+
+    <div class="callout callout-warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-text">
+        <strong>Critical: Atomic balance updates</strong>
+        Application logic MUST wrap every deposit/withdrawal in a database transaction that (1) inserts a <code>savings_transactions</code> row and (2) updates <code>savings_accounts.balance</code>. Never update the balance without creating a corresponding transaction record.
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">savings_accounts <span>— one per member per account type</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">account_number</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">e.g. SA-2025-0042. Human-readable, sequential per type.</td></tr>
+            <tr><td class="col-name is-fk">member_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> member_profiles.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">account_type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">REGULAR_SAVINGS | FIXED_DEPOSIT | RECURRING_DEPOSIT. Extensible.</td></tr>
+            <tr><td class="col-name">balance</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span> NOT NULL DEFAULT 0</td><td class="col-notes">Denormalized running balance. Never edit directly — only via atomic transaction.</td></tr>
+            <tr><td class="col-name">interest_rate</td><td class="col-type">NUMERIC(5,4)</td><td></td><td class="col-notes">Snapshot of the rate at account opening. Can be updated by employee.</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">ACTIVE | DORMANT | CLOSED</td></tr>
+            <tr><td class="col-name">opened_at</td><td class="col-type">DATE</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">last_transaction_at</td><td class="col-type">TIMESTAMPTZ</td><td><span class="inline-tag i-den">CACHED</span></td><td class="col-notes">Updated on each transaction. Drives dormancy detection.</td></tr>
+            <tr><td class="col-name">closed_at</td><td class="col-type">DATE</td><td>nullable</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">savings_transactions <span>— immutable ledger of all account movements</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">account_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> savings_accounts.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">transaction_type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> NOT NULL</td><td class="col-notes">DEPOSIT | WITHDRAWAL | INTEREST_CREDIT | FEE_DEBIT | TRANSFER_IN | TRANSFER_OUT</td></tr>
+            <tr><td class="col-name">amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL, > 0</td><td class="col-notes">Always positive. Type determines direction.</td></tr>
+            <tr><td class="col-name">balance_before</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Snapshot for audit. Enables full balance reconstruction without recalculation.</td></tr>
+            <tr><td class="col-name">balance_after</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">reference_number</td><td class="col-type">VARCHAR(30)</td><td><span class="inline-tag i-unique">UNIQUE</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">e.g. TXN-20250330-8472. Useful for customer receipts.</td></tr>
+            <tr><td class="col-name">description</td><td class="col-type">TEXT</td><td>nullable</td><td class="col-notes">Free-text note.</td></tr>
+            <tr><td class="col-name">transaction_date</td><td class="col-type">DATE</td><td>NOT NULL <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">Business date. May differ from created_at (backdating within rules).</td></tr>
+            <tr><td class="col-name is-fk">performed_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes">Employee or self (for member-initiated deposits in Phase 2).</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">COMPLETED | REVERSED | PENDING</td></tr>
+            <tr><td class="col-name is-fk">reversal_of</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> savings_transactions.id — nullable</td><td class="col-notes">Self-referential. Points to the original transaction being reversed.</td></tr>
+            <tr><td class="col-name">metadata</td><td class="col-type">JSONB</td><td><span class="inline-tag i-json">JSON</span></td><td class="col-notes">Channel (app/counter), payment mode, cheque number, etc.</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>NOT NULL DEFAULT now()</td><td class="col-notes">System timestamp. Immutable after insert.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">interest_rate_config <span>— time-bounded rate registry</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">product_type</td><td class="col-type">ENUM</td><td>NOT NULL</td><td class="col-notes">SAVINGS | FIXED_DEPOSIT | PERSONAL_LOAN | BUSINESS_LOAN | etc.</td></tr>
+            <tr><td class="col-name">rate</td><td class="col-type">NUMERIC(5,4)</td><td>NOT NULL</td><td class="col-notes">Annual percentage rate. e.g. 0.0850 = 8.5%</td></tr>
+            <tr><td class="col-name">effective_from</td><td class="col-type">DATE</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">effective_to</td><td class="col-type">DATE</td><td>nullable</td><td class="col-notes">NULL = currently active rate for this product type.</td></tr>
+            <tr><td class="col-name is-fk">created_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes">Requires SUPER_ADMIN or authorized EMPLOYEE.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SCHEMA: LOANS -->
+  <div class="section" id="loans">
+    <h2>Loan Lifecycle</h2>
+    <p class="section-desc">Loans move through a structured pipeline from application → approval → disbursement → repayment. Four tables capture the full lifecycle with pre-calculated EMI schedules for deterministic reporting.</p>
+
+    <div class="callout callout-success">
+      <div class="callout-icon">📐</div>
+      <div class="callout-text">
+        <strong>Pre-computed EMI Schedule</strong>
+        When a loan is disbursed, the application generates the full <code>loan_emi_schedule</code> (all N installments) using the reducing-balance formula. This enables instant "how much is due this month" and "show me all overdue EMIs" queries without any runtime calculation.
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">loan_applications <span>— application intake &amp; approval workflow</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">member_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> member_profiles.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">application_number</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">e.g. LNA-2025-0018</td></tr>
+            <tr><td class="col-name">loan_type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">PERSONAL | BUSINESS | EMERGENCY | EDUCATION | HOUSING | AGRICULTURE</td></tr>
+            <tr><td class="col-name">requested_amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">requested_tenure_months</td><td class="col-type">SMALLINT</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">purpose</td><td class="col-type">TEXT</td><td></td><td class="col-notes">Member's stated purpose.</td></tr>
+            <tr><td class="col-name">collateral</td><td class="col-type">JSONB</td><td><span class="inline-tag i-json">JSON</span></td><td class="col-notes">{ type, description, estimated_value, document_urls[] }</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">DRAFT → SUBMITTED → UNDER_REVIEW → APPROVED | REJECTED → DISBURSED | CANCELLED</td></tr>
+            <tr><td class="col-name is-fk">reviewed_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id — nullable</td><td class="col-notes">Employee who actioned the application.</td></tr>
+            <tr><td class="col-name">approved_amount</td><td class="col-type">NUMERIC(15,2)</td><td>nullable</td><td class="col-notes">May differ from requested. Set on approval.</td></tr>
+            <tr><td class="col-name">approved_tenure_months</td><td class="col-type">SMALLINT</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">rejection_reason</td><td class="col-type">TEXT</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">submitted_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">reviewed_at</td><td class="col-type">TIMESTAMPTZ</td><td></td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">loans <span>— active loan master record</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">application_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> loan_applications.id <span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">1:1. A loan always comes from an application.</td></tr>
+            <tr><td class="col-name is-fk">member_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> member_profiles.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">Denormalized for direct query without joining applications.</td></tr>
+            <tr><td class="col-name">loan_number</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">e.g. LN-2025-0018</td></tr>
+            <tr><td class="col-name">loan_type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">Copied from application.</td></tr>
+            <tr><td class="col-name">principal_amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Disbursed amount. Immutable after disbursal.</td></tr>
+            <tr><td class="col-name">interest_rate</td><td class="col-type">NUMERIC(5,4)</td><td>NOT NULL</td><td class="col-notes">Snapshot of rate at disbursement. Locked in for loan lifecycle.</td></tr>
+            <tr><td class="col-name">tenure_months</td><td class="col-type">SMALLINT</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">emi_amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Calculated at disbursement via reducing balance formula.</td></tr>
+            <tr><td class="col-name">disbursed_at</td><td class="col-type">DATE</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">disbursed_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">first_emi_date</td><td class="col-type">DATE</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">outstanding_principal</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span></td><td class="col-notes">Starts at principal_amount. Reduced by each payment's principal component. Key for balance sheet.</td></tr>
+            <tr><td class="col-name">total_paid_principal</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span> DEFAULT 0</td><td class="col-notes">Accumulated from loan_payments.</td></tr>
+            <tr><td class="col-name">total_paid_interest</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span> DEFAULT 0</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">total_paid_penalty</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span> DEFAULT 0</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">ACTIVE | CLOSED | DEFAULTED | RESTRUCTURED | WRITTEN_OFF</td></tr>
+            <tr><td class="col-name">last_payment_date</td><td class="col-type">DATE</td><td><span class="inline-tag i-den">CACHED</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">closed_at</td><td class="col-type">DATE</td><td>nullable</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">loan_emi_schedule <span>— pre-calculated installment table</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">loan_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> loans.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">installment_number</td><td class="col-type">SMALLINT</td><td>NOT NULL</td><td class="col-notes">1 through tenure_months.</td></tr>
+            <tr><td class="col-name">due_date</td><td class="col-type">DATE</td><td>NOT NULL <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">For "all overdue EMIs" queries.</td></tr>
+            <tr><td class="col-name">emi_amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Fixed for reducing-balance loans.</td></tr>
+            <tr><td class="col-name">principal_component</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Increases each installment.</td></tr>
+            <tr><td class="col-name">interest_component</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Decreases each installment.</td></tr>
+            <tr><td class="col-name">opening_balance</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Outstanding at start of this installment.</td></tr>
+            <tr><td class="col-name">closing_balance</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">= opening_balance - principal_component</td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">PENDING | PARTIALLY_PAID | PAID | OVERDUE | WAIVED</td></tr>
+            <tr><td class="col-name">paid_amount</td><td class="col-type">NUMERIC(15,2)</td><td><span class="inline-tag i-den">CACHED</span></td><td class="col-notes">Updated when a loan_payment covers this EMI.</td></tr>
+            <tr><td class="col-name">paid_at</td><td class="col-type">DATE</td><td>nullable</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">loan_payments <span>— actual repayment records</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">loan_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> loans.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">payment_number</td><td class="col-type">VARCHAR(25)</td><td><span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">e.g. PMT-LN2025-0018-003 (loan_number + sequence)</td></tr>
+            <tr><td class="col-name">amount_paid</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Total received from member.</td></tr>
+            <tr><td class="col-name">principal_paid</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes">Allocated towards principal.</td></tr>
+            <tr><td class="col-name">interest_paid</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">penalty_paid</td><td class="col-type">NUMERIC(15,2)</td><td>DEFAULT 0</td><td class="col-notes">Late payment fee, if any.</td></tr>
+            <tr><td class="col-name">payment_date</td><td class="col-type">DATE</td><td>NOT NULL <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">payment_mode</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">CASH | BANK_TRANSFER | CHEQUE | ONLINE | ESEWA | KHALTI</td></tr>
+            <tr><td class="col-name">payment_reference</td><td class="col-type">VARCHAR(100)</td><td>nullable</td><td class="col-notes">Cheque/transfer reference.</td></tr>
+            <tr><td class="col-name">emi_installment_ids</td><td class="col-type">UUID[]</td><td><span class="inline-tag i-json">ARRAY</span></td><td class="col-notes">Which EMI schedule rows this payment clears. A single payment may cover multiple overdue EMIs.</td></tr>
+            <tr><td class="col-name is-fk">received_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes">Employee or system (for future auto-debit).</td></tr>
+            <tr><td class="col-name">notes</td><td class="col-type">TEXT</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>DEFAULT now()</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SCHEMA: EXPENSES & AUDIT -->
+  <div class="section" id="expenses">
+    <h2>Org Expenses</h2>
+    <p class="section-desc">Tracks the organization's own expenditure — distinct from member financial activity. Designed with an approval workflow for governance.</p>
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">expenses <span>— organizational cost records</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">expense_number</td><td class="col-type">VARCHAR(20)</td><td><span class="inline-tag i-unique">UNIQUE</span></td><td class="col-notes">e.g. EXP-2025-0091</td></tr>
+            <tr><td class="col-name">category</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span> <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">SALARY | RENT | UTILITIES | STATIONERY | MAINTENANCE | TRAVEL | AUDIT_FEE | OTHER</td></tr>
+            <tr><td class="col-name">description</td><td class="col-type">TEXT</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">amount</td><td class="col-type">NUMERIC(15,2)</td><td>NOT NULL</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">expense_date</td><td class="col-type">DATE</td><td>NOT NULL <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">vendor_name</td><td class="col-type">VARCHAR(200)</td><td>nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">payment_mode</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">CASH | BANK_TRANSFER | CHEQUE</td></tr>
+            <tr><td class="col-name">receipt_urls</td><td class="col-type">TEXT[]</td><td>nullable</td><td class="col-notes">Storage URLs for scanned receipts.</td></tr>
+            <tr><td class="col-name is-fk">recorded_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">approved_by</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id — nullable</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">status</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">DRAFT | APPROVED | PAID | REJECTED</td></tr>
+            <tr><td class="col-name">fiscal_year</td><td class="col-type">VARCHAR(9)</td><td><span class="inline-tag i-idx">IDX</span></td><td class="col-notes">e.g. "2081-82" (Nepali BS year). Critical for annual reporting.</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>DEFAULT now()</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="audit">
+    <h2>Audit Log &amp; Notifications</h2>
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">audit_logs <span>— append-only compliance trail</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">BIGSERIAL</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes">BIGSERIAL for high-volume append performance (not UUID).</td></tr>
+            <tr><td class="col-name is-fk">actor_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">action</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">CREATE | READ | UPDATE | DELETE | LOGIN | LOGOUT | EXPORT | APPROVE | REJECT</td></tr>
+            <tr><td class="col-name">entity_type</td><td class="col-type">VARCHAR(50)</td><td><span class="inline-tag i-idx">IDX</span></td><td class="col-notes">e.g. 'savings_account', 'loan', 'member_profile'</td></tr>
+            <tr><td class="col-name">entity_id</td><td class="col-type">UUID</td><td></td><td class="col-notes">Composite index with entity_type for efficient entity history lookups.</td></tr>
+            <tr><td class="col-name">old_values</td><td class="col-type">JSONB</td><td>nullable</td><td class="col-notes">Previous state snapshot. NULL for CREATE actions.</td></tr>
+            <tr><td class="col-name">new_values</td><td class="col-type">JSONB</td><td>nullable</td><td class="col-notes">New state snapshot. NULL for DELETE/READ actions.</td></tr>
+            <tr><td class="col-name">ip_address</td><td class="col-type">INET</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">user_agent</td><td class="col-type">TEXT</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>NOT NULL DEFAULT now() <span class="inline-tag i-idx">IDX</span></td><td class="col-notes">Append-only: no UPDATE or DELETE ever permitted on this table.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">notifications <span>— in-app &amp; push notification log</span></div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td class="col-name is-pk">id</td><td class="col-type">UUID</td><td><span class="inline-tag i-pk">PK</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name is-fk">user_id</td><td class="col-type">UUID</td><td><span class="inline-tag i-fk">FK</span> users.id <span class="inline-tag i-idx">IDX</span></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">type</td><td class="col-type">ENUM</td><td><span class="inline-tag i-enum">ENUM</span></td><td class="col-notes">EMI_REMINDER | DEPOSIT_CONFIRM | LOAN_APPROVED | LOAN_REJECTED | GENERAL</td></tr>
+            <tr><td class="col-name">title</td><td class="col-type">VARCHAR(200)</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">body</td><td class="col-type">TEXT</td><td></td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">is_read</td><td class="col-type">BOOLEAN</td><td>DEFAULT false</td><td class="col-notes"></td></tr>
+            <tr><td class="col-name">metadata</td><td class="col-type">JSONB</td><td><span class="inline-tag i-json">JSON</span></td><td class="col-notes">deep_link, related_entity_id, etc.</td></tr>
+            <tr><td class="col-name">created_at</td><td class="col-type">TIMESTAMPTZ</td><td>DEFAULT now()</td><td class="col-notes"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- DENORMALIZATION -->
+  <div class="section" id="denorm">
+    <h2>Denormalization Strategy</h2>
+    <p class="section-desc">Computed fields are stored alongside their source data to eliminate expensive aggregates on hot read paths. Consistency is maintained via atomic writes — not eventual reconciliation.</p>
+
+    <div class="schema-block">
+      <div class="schema-block-header">
+        <div class="schema-table-name">Cached Fields &amp; Update Triggers</div>
+      </div>
+      <div class="schema-body">
+        <table>
+          <thead><tr><th>Table</th><th>Cached Column</th><th>Updated When</th><th>Guard</th></tr></thead>
+          <tbody>
+            <tr><td class="col-type">savings_accounts</td><td class="col-name">balance</td><td class="col-notes">On every savings_transaction INSERT</td><td class="col-notes">Same DB transaction. Rollback if either fails.</td></tr>
+            <tr><td class="col-type">savings_accounts</td><td class="col-name">last_transaction_at</td><td class="col-notes">On every savings_transaction INSERT</td><td class="col-notes"></td></tr>
+            <tr><td class="col-type">loans</td><td class="col-name">outstanding_principal</td><td class="col-notes">On every loan_payment INSERT</td><td class="col-notes">= principal_amount − total_paid_principal</td></tr>
+            <tr><td class="col-type">loans</td><td class="col-name">total_paid_principal / interest / penalty</td><td class="col-notes">On every loan_payment INSERT</td><td class="col-notes">Accumulated totals.</td></tr>
+            <tr><td class="col-type">loans</td><td class="col-name">last_payment_date</td><td class="col-notes">On every loan_payment INSERT</td><td class="col-notes"></td></tr>
+            <tr><td class="col-type">loan_emi_schedule</td><td class="col-name">paid_amount, paid_at, status</td><td class="col-notes">When a loan_payment allocates to this EMI row</td><td class="col-notes">Covered by same transaction as loan_payments INSERT.</td></tr>
+            <tr><td class="col-type">savings_transactions</td><td class="col-name">balance_before / balance_after</td><td class="col-notes">At INSERT time, read current balance, compute</td><td class="col-notes">Snapshot approach — never re-derived later.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">🔄</div>
+      <div class="callout-text">
+        <strong>Reconciliation Job (optional, nightly)</strong>
+        A background cron can verify that cached balances match the SUM of their transaction histories. Discrepancies are logged as alerts. This is a safety net — it should never fire in normal operation, but it catches bugs before they compound.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- INDEXES -->
+  <div class="section" id="indexes">
+    <h2>Index Strategy</h2>
+    <p class="section-desc">Indexes are tuned for the four most common query patterns: member lookups, date-range reporting, status filtering, and foreign key joins.</p>
+    <div class="schema-block">
+      <div class="schema-body" style="padding: 4px 0;">
+        <table class="idx-table">
+          <thead><tr><th style="padding:10px 16px; background:var(--bg3); font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted)">Table</th><th>Columns</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>users</td><td>phone_number</td><td class="col-notes">Primary lookup during auth. UNIQUE constraint creates it automatically.</td></tr>
+            <tr><td>users</td><td>email</td><td class="col-notes">OAuth provider lookup. Partial index WHERE email IS NOT NULL.</td></tr>
+            <tr><td>member_profiles</td><td>member_code</td><td class="col-notes">Counter/reception staff lookups by code.</td></tr>
+            <tr><td>member_profiles</td><td>full_name (GIN trigram)</td><td class="col-notes">Fuzzy name search across member list.</td></tr>
+            <tr><td>savings_accounts</td><td>member_id</td><td class="col-notes">All accounts for a member.</td></tr>
+            <tr><td>savings_accounts</td><td>account_number</td><td class="col-notes">Lookup by printed account number.</td></tr>
+            <tr><td>savings_transactions</td><td>account_id, transaction_date</td><td class="col-notes">Composite. Account statement queries: "all txns for acc X in date range".</td></tr>
+            <tr><td>savings_transactions</td><td>reference_number</td><td class="col-notes">Receipt-based lookup.</td></tr>
+            <tr><td>loans</td><td>member_id</td><td class="col-notes">All loans for a member.</td></tr>
+            <tr><td>loans</td><td>status</td><td class="col-notes">Filter ACTIVE loans for portfolio report.</td></tr>
+            <tr><td>loan_emi_schedule</td><td>loan_id</td><td class="col-notes">EMI schedule for a specific loan.</td></tr>
+            <tr><td>loan_emi_schedule</td><td>due_date, status</td><td class="col-notes">Composite. "All OVERDUE EMIs this week" — critical for collection management.</td></tr>
+            <tr><td>loan_payments</td><td>loan_id, payment_date</td><td class="col-notes">Payment history for a loan.</td></tr>
+            <tr><td>expenses</td><td>expense_date, fiscal_year</td><td class="col-notes">Monthly/annual expense reports.</td></tr>
+            <tr><td>audit_logs</td><td>actor_id, created_at</td><td class="col-notes">Activity by a specific user.</td></tr>
+            <tr><td>audit_logs</td><td>entity_type, entity_id</td><td class="col-notes">Composite. Full change history of any entity.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ACCESS CONTROL -->
+  <div class="section" id="access">
+    <h2>Access Control Matrix</h2>
+    <p class="section-desc">Three roles with strictly escalating privileges. Enforced at the API/service layer — not just the UI. Row-level security (RLS) in PostgreSQL can optionally enforce this at the DB layer too.</p>
+    <div class="matrix-wrap">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="text-align:left; width:220px;">Resource / Operation</th>
+            <th>Member<br/><span style="font-size:9px;text-transform:none;letter-spacing:0;font-weight:300;color:var(--text-muted)">(own data only)</span></th>
+            <th>Employee<br/><span style="font-size:9px;text-transform:none;letter-spacing:0;font-weight:300;color:var(--text-muted)">(all members)</span></th>
+            <th>Super Admin<br/><span style="font-size:9px;text-transform:none;letter-spacing:0;font-weight:300;color:var(--text-muted)">(full access)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="resource-col">View own profile</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View all member profiles</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Edit member profile</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Register new member</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View own account balance</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Deposit savings (member-initiated)</td><td class="partial">Phase 2</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Credit interest</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View own transaction history</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Reverse a transaction</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Apply for loan (self)</td><td class="partial">Phase 3</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Review loan application</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Disburse loan</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Record EMI payment</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View own loan details</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View all loans / portfolio</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Record org expense</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Approve expense</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View overall reports</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">View audit logs</td><td class="dash">—</td><td class="partial">Limited</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Manage employee accounts</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Configure interest rates</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+          <tr><td class="resource-col">Export data</td><td class="dash">—</td><td class="partial">Own reports</td><td class="check">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- PHASES -->
+  <div class="section" id="phases">
+    <h2>Incremental Rollout Plan</h2>
+    <p class="section-desc">The data model is designed to support all three phases from day one — no breaking schema migrations needed. New capabilities are enabled by activating application-layer features on top of the existing tables.</p>
+
+    <div class="phase-grid">
+      <div class="phase-card">
+        <div class="phase-num" style="color: var(--accent);">Phase 01 — Now</div>
+        <h4>Employee-Operated Core</h4>
+        <ul>
+          <li>Member registration & KYC</li>
+          <li>Savings deposits (by employee)</li>
+          <li>Interest credit to account</li>
+          <li>Loan registration & disbursement</li>
+          <li>EMI payment recording</li>
+          <li>Expense management</li>
+          <li>Member &amp; portfolio reports</li>
+          <li>Audit trail</li>
+        </ul>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num" style="color: var(--accent3);">Phase 02 — Member Portal</div>
+        <h4>Self-Service Visibility</h4>
+        <ul>
+          <li>Members login via Google/Apple/Phone</li>
+          <li>View own profile, savings, loan</li>
+          <li>View transaction history</li>
+          <li>Download statements (PDF)</li>
+          <li>Receive push notifications (EMI due)</li>
+          <li>Member-initiated deposits (eSewa/Khalti)</li>
+          <li>Mobile PWA home screen install</li>
+        </ul>
+      </div>
+      <div class="phase-card">
+        <div class="phase-num" style="color: var(--accent4);">Phase 03 — Native Apps</div>
+        <h4>Full Digital Lending</h4>
+        <ul>
+          <li>Android &amp; iOS apps (same API)</li>
+          <li>Members apply for loans in-app</li>
+          <li>Employee loan review queue</li>
+          <li>Document upload from phone camera</li>
+          <li>Biometric login support</li>
+          <li>SMS/push EMI reminders</li>
+          <li>Advanced analytics dashboard</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout callout-success" style="margin-top: 28px;">
+      <div class="callout-icon">✅</div>
+      <div class="callout-text">
+        <strong>Schema stability guarantee</strong>
+        Phase 2 and 3 require zero breaking changes to this schema. New feature flags, notification preferences, and app-specific settings can live in the existing <code>metadata JSONB</code> columns or in small new satellite tables (e.g. <code>device_tokens</code> for push notifications) that attach via FK to <code>users.id</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn" style="margin-top: 0;">
+    <div class="callout-icon">🏛️</div>
+    <div class="callout-text">
+      <strong>Nepal-specific considerations</strong>
+      Use Bikram Sambat (BS) fiscal year in the <code>fiscal_year</code> field (e.g. "2081-82"). Store all dates in UTC but expose in NPT (+05:45). Consider NRB compliance fields for regulated SACCOs. Nepali calendar conversions should be handled at the application layer, not the DB.
+    </div>
+  </div>
+
+  <div style="padding: 40px 0 20px; border-top: 1px solid var(--border); margin-top: 48px;">
+    <div style="display:flex; gap: 32px; flex-wrap: wrap;">
+      <div>
+        <div style="font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Recommended Database</div>
+        <div style="font-size:13px; color:var(--text-dim);">PostgreSQL 15+ (JSONB, UUID, array types, RLS, triggers)</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Alternative</div>
+        <div style="font-size:13px; color:var(--text-dim);">Firebase Firestore (NoSQL — requires denorm adjustments)</div>
+      </div>
+      <div>
+        <div style="font-family:'DM Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--text-muted); margin-bottom:6px;">Version</div>
+        <div style="font-size:13px; color:var(--text-dim);">v1.0 — 2025</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Active nav highlighting on scroll
+  const sections = document.querySelectorAll('[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === '#' + entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
