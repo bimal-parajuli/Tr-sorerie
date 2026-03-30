@@ -71,3 +71,4 @@ temp/
 
 # dotenv environment variable files
 .env*.local
+\n# Documentation\n*.md
