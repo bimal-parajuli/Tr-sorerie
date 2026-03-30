@@ -63,6 +63,10 @@ temp/
 *.pem
 *.key
 
+# Root level documentation files
+/*.html
+/*.csv
+
 # Sentry
 .sentryclirc
 
@@ -71,4 +75,7 @@ temp/
 
 # dotenv environment variable files
 .env*.local
+
+# Unnecessary markdowns
 \n# Documentation\n*.md
+*.md
