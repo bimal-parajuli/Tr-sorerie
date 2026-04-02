@@ -1,10 +1,21 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
     branches: ['**']
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Deploy target environment'
+        required: true
+        type: choice
+        options:
+          - none
+          - staging
+          - production
+        default: none
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -30,10 +41,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma client
         working-directory: packages/db
@@ -52,14 +62,14 @@ jobs:
             --exit-code || echo "::warning::Prisma schema has unapplied changes"
 
       - name: Format check
-        run: npx prettier --check "**/*.{ts,tsx,md}" || echo "::warning::Code formatting issues detected"
+        run: npx prettier --check "**/*.{ts,tsx}"
 
       - name: Lint
-        run: npm run lint --workspace=web 2>&1 || echo "::warning::Lint issues detected"
+        run: npm run lint --workspace=web
 
       - name: TypeScript type check
         working-directory: apps/web
-        run: npx tsc --noEmit 2>&1 || echo "::warning::Type check issues detected"
+        run: npx tsc --noEmit
 
       - name: Dependency audit
         run: npm audit --audit-level=high || echo "::warning::Dependency vulnerabilities detected"
@@ -91,10 +101,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma client
         working-directory: packages/db
@@ -131,10 +140,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma client
         working-directory: packages/db
@@ -170,7 +178,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
           registry-url: https://npm.pkg.github.com
           scope: '@bimal-parajuli'
 
@@ -205,7 +212,6 @@ jobs:
       - name: Publish to GitHub Packages
         run: |
           cd apps/web
-          # Create a scoped package.json for publishing
           node -e "
             const pkg = require('./package.json');
             pkg.name = '@bimal-parajuli/tresorerie-web';
@@ -228,34 +234,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        working-directory: packages/db
-        run: npx prisma generate
+          name: build-output
+          path: apps/web/
 
       - name: Bundle size analysis
         working-directory: apps/web
         run: |
-          # Build to get .next output for analysis
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
-          CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
-          DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-          DIRECT_URL="${{ secrets.DIRECT_URL }}" \
-          npx next build 2>&1 || true
-
           echo "## Bundle Size Report" >> $GITHUB_STEP_SUMMARY
           if [ -d ".next" ]; then
             echo '```' >> $GITHUB_STEP_SUMMARY
-            du -sh .next/ 2>/dev/null || true
-            du -sh .next/static/ 2>/dev/null || true
+            echo "Total build output:" >> $GITHUB_STEP_SUMMARY
+            du -sh .next/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Static assets:" >> $GITHUB_STEP_SUMMARY
+            du -sh .next/static/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Server output:" >> $GITHUB_STEP_SUMMARY
+            du -sh .next/server/ 2>/dev/null >> $GITHUB_STEP_SUMMARY || true
             echo '```' >> $GITHUB_STEP_SUMMARY
           else
             echo "Build output not available for size analysis" >> $GITHUB_STEP_SUMMARY
@@ -276,3 +274,196 @@ jobs:
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # Stage 6: Deploy to Non-Production (manual)
+  # ─────────────────────────────────────────────
+  deploy-nonprod:
+    name: Deploy to Non-Prod
+    runs-on: ubuntu-latest
+    needs: sdlc-post-check
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_target == 'staging'
+    environment: staging
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma client
+        working-directory: packages/db
+        run: npx prisma generate
+
+      - name: Run Prisma migrations on non-prod DB
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: npx prisma migrate deploy
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+
+      - name: Deploy to Vercel (Preview)
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to: $DEPLOY_URL"
+
+      - name: Smoke test
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+          echo "Smoke testing: $DEPLOY_URL"
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || true)
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "308" ]; then
+              echo "Smoke test passed (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — retrying in 10s..."
+            sleep 10
+          done
+          echo "::warning::Smoke test did not get a successful response after 5 attempts"
+
+      - name: Security headers check
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+          echo "## Security Headers Report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          curl -sI "$DEPLOY_URL" | grep -iE "(x-frame|x-content-type|strict-transport|content-security|referrer-policy|permissions-policy)" >> $GITHUB_STEP_SUMMARY || echo "No security headers found" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Post deployment summary
+        run: |
+          echo "## Non-Prod Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Preview URL** | ${{ steps.deploy.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Migrations** | Applied |" >> $GITHUB_STEP_SUMMARY
+
+  # ─────────────────────────────────────────────
+  # Stage 7: Deploy to Production (manual, release/* only)
+  # ─────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: sdlc-post-check
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      && github.event.inputs.deploy_target == 'production'
+      && startsWith(github.ref_name, 'release/')
+    environment: production
+    permissions:
+      contents: write
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Validate release branch
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [[ ! "$BRANCH" =~ ^release/ ]]; then
+            echo "::error::Production deployments are only allowed from release/* branches. Current branch: $BRANCH"
+            exit 1
+          fi
+          echo "Branch validation passed: $BRANCH"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma client
+        working-directory: packages/db
+        run: npx prisma generate
+
+      - name: Run Prisma migrations on production DB
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.PROD_DIRECT_URL }}
+        run: npx prisma migrate deploy
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+
+      - name: Deploy to Vercel (Production)
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to production: $DEPLOY_URL"
+
+      - name: Post-deploy smoke test
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.url }}"
+          echo "Smoke testing production: $DEPLOY_URL"
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL" || true)
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "307" ] || [ "$STATUS" = "308" ]; then
+              echo "Production smoke test passed (HTTP $STATUS)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS — retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Production smoke test failed after 5 attempts"
+          exit 1
+
+      - name: Tag release
+        run: |
+          VERSION="v$(date +%Y.%m.%d)-$(echo $GITHUB_SHA | cut -c1-7)"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+          echo "Tagged release: $VERSION"
+
+      - name: Post deployment summary
+        run: |
+          echo "## Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Production URL** | ${{ steps.deploy.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Migrations** | Applied |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Git Tag** | v$(date +%Y.%m.%d)-$(echo $GITHUB_SHA | cut -c1-7) |" >> $GITHUB_STEP_SUMMARY
