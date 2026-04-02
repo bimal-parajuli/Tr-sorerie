@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { UserButton, SignOutButton } from '@clerk/nextjs'
 import { 
   LayoutDashboard, 
   Users, 
   HandCoins, 
   Receipt, 
   BarChart3,
-  Settings,
   LogOut
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -46,11 +46,24 @@ export function Sidebar() {
           </Link>
         ))}
       </nav>
-      <div className="p-4 border-t">
-        <button className="flex items-center space-x-3 p-3 w-full text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
-          <LogOut size={20} />
-          <span className="font-medium">Logout</span>
-        </button>
+      <div className="p-4 border-t space-y-3">
+        <div className="flex items-center space-x-3 p-3">
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: 'w-8 h-8',
+              },
+            }}
+          />
+          <span className="text-sm font-medium text-gray-700">Account</span>
+        </div>
+        <SignOutButton>
+          <button className="flex items-center space-x-3 p-3 w-full text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+            <LogOut size={20} />
+            <span className="font-medium">Logout</span>
+          </button>
+        </SignOutButton>
       </div>
     </div>
   )
