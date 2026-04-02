@@ -52,9 +52,15 @@ jobs:
       - name: Prisma schema validation
         working-directory: packages/db
         run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          DIRECT_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
 
       - name: Prisma migration drift check
         working-directory: packages/db
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          DIRECT_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
         run: |
           npx prisma migrate diff \
             --from-migrations ./prisma/migrations \
