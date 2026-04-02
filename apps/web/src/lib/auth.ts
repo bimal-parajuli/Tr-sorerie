@@ -19,7 +19,7 @@ export async function resolveUser(): Promise<{
   }
 
   const user = await prisma.user.findUnique({
-    where: { clerkId },
+    where: { clerkId, isActive: true },
     include: {
       memberProfile: {
         select: { id: true },
